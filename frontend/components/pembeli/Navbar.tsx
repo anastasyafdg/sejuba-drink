@@ -29,8 +29,8 @@ export default function NavbarPembeli() {
               href={item.href}
               className={`rounded-full border px-7 py-2 text-sm font-medium transition ${
                 index === 0
-                  ? "border-orange-500 bg-orange-500 text-white"
-                  : "border-gray-400 bg-white text-gray-700 hover:border-orange-400 hover:text-orange-500"
+                  ? "border-gray-500 bg-white-500 text-gray"
+                  : "border-gray-400 bg-white text-gray-700 hover:border-white-400 hover:text-white-500"
               }`}
             >
               {item.name}
