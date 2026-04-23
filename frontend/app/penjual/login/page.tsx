@@ -94,7 +94,7 @@ export default function LoginPenjualPage() {
               {/* Gambar botol */}
               <div className="relative mt-24 w-full max-w-[880px]">
                 <Image
-                  src="/images/beranda/produk2.png"
+                  src="/images/beranda/produk02.png"
                   alt="Produk Sejuba Drink"
                   width={900}
                   height={520}
