@@ -97,7 +97,7 @@ export default function PembeliPage() {
 
           <div className="mt-12 flex justify-center">
             <Image
-              src="/images/beranda/produk2.png"
+              src="/images/beranda/produk02.png"
               alt="Produk Sejuba Drink"
               width={900}
               height={420}
