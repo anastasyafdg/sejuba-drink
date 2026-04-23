@@ -2,10 +2,54 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPenjualPage() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!username || !password) {
+      setError("Username dan password wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penjual/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ nama_penjual: username, password }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.message || "Login gagal. Coba lagi.");
+        return;
+      }
+
+      // Simpan info penjual ke localStorage
+      localStorage.setItem("penjual", JSON.stringify(data.data));
+      router.push("/penjual/dashboard");
+    } catch {
+      setError("Tidak dapat terhubung ke server. Pastikan backend berjalan.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f7f8f4]">
@@ -61,7 +105,14 @@ export default function LoginPenjualPage() {
 
               {/* Box login */}
               <div className="absolute top-[20px] z-20 w-full max-w-[560px] rounded-[38px] border border-white/40 bg-[#a8c9a8]/72 px-10 py-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-md md:px-12 md:py-11">
-                <form className="space-y-8">
+                <form className="space-y-8" onSubmit={handleSubmit}>
+                  {/* Pesan error */}
+                  {error && (
+                    <div className="rounded-xl bg-red-500/20 px-4 py-3 text-sm font-medium text-white">
+                      {error}
+                    </div>
+                  )}
+
                   <div>
                     <label className="mb-2 block text-[18px] font-semibold text-white md:text-[20px]">
                       Username:
@@ -72,6 +123,7 @@ export default function LoginPenjualPage() {
                       onChange={(e) => setUsername(e.target.value)}
                       className="w-full border-0 border-b-2 border-white bg-transparent pb-2 text-base text-white outline-none placeholder:text-white/70"
                       placeholder=""
+                      disabled={loading}
                     />
                   </div>
 
@@ -85,15 +137,17 @@ export default function LoginPenjualPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full border-0 border-b-2 border-white bg-transparent pb-2 text-base text-white outline-none placeholder:text-white/70"
                       placeholder=""
+                      disabled={loading}
                     />
                   </div>
 
                   <div className="flex justify-center pt-1">
                     <button
                       type="submit"
-                      className="min-w-[160px] rounded-full bg-[#ff5a14] px-10 py-3 text-[18px] font-bold text-white transition hover:scale-[1.02]"
+                      disabled={loading}
+                      className="min-w-[160px] rounded-full bg-[#ff5a14] px-10 py-3 text-[18px] font-bold text-white transition hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      LOGIN
+                      {loading ? "Memproses..." : "LOGIN"}
                     </button>
                   </div>
                 </form>
