@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 
 /* ── Types ── */
 interface Varian {
@@ -17,6 +17,7 @@ interface Product {
     kandungan: string;
     varian: Varian[];
     status: "Tersedia" | "Habis";
+    foto?: string; // base64 data URL
 }
 
 /* ── Dummy data (Sejuba Drink) ── */
@@ -24,9 +25,9 @@ const HARGA = { "50ml": 8500, "100ml": 15500, "250ml": 29500 };
 
 const INITIAL_PRODUCTS: Product[] = [
     {
-        id: 1, nama: "Sejuba Green Detox", jenis: "Detox",
-        deskripsi: "Minuman detoks hijau kaya klorofil dan antioksidan.",
-        kandungan: "Pandan, Daun Suji, Lemon, Madu, Spirulina",
+        id: 1, nama: "Green Series", jenis: "Cold Pressed Juice",
+        deskripsi: "Kaya vitamin & antioksidan, menjaga daya tahan tubuh, hidrasi alami, mendukung pencernaan sehat, baik untuk jantung, serta membantu kontrol berat badan.",
+        kandungan: "Pak Choy, Apel, Timun, Nanas",
         varian: [
             { ukuran: "50ml", harga: HARGA["50ml"], stok: 80 },
             { ukuran: "100ml", harga: HARGA["100ml"], stok: 60 },
@@ -35,9 +36,9 @@ const INITIAL_PRODUCTS: Product[] = [
         status: "Tersedia",
     },
     {
-        id: 2, nama: "Sejuba Orange Boost", jenis: "Energi",
-        deskripsi: "Minuman energi alami berbasis jeruk nipis dan jahe.",
-        kandungan: "Jeruk Nipis, Jahe, Madu, Vitamin C, Gula Aren",
+        id: 2, nama: "Orange Series", jenis: "Cold Pressed Juice",
+        deskripsi: "Menyehatkan mata, kaya antioksidan, memperkuat sistem imun, mendukung detoksifikasi, serta menjaga kesehatan jantung dan gula darah.",
+        kandungan: "Apel, Wortel, Nanas",
         varian: [
             { ukuran: "50ml", harga: HARGA["50ml"], stok: 50 },
             { ukuran: "100ml", harga: HARGA["100ml"], stok: 40 },
@@ -46,9 +47,9 @@ const INITIAL_PRODUCTS: Product[] = [
         status: "Tersedia",
     },
     {
-        id: 3, nama: "Sejuba Lemon Mint", jenis: "Segar",
-        deskripsi: "Perpaduan lemon dan mint yang menyegarkan.",
-        kandungan: "Lemon, Daun Mint, Madu, Air Kelapa, Garam Himalaya",
+        id: 3, nama: "Red Series", jenis: "Cold Pressed Juice",
+        deskripsi: "Menjaga tekanan darah & sirkulasi, meningkatkan stamina, baik untuk mata & kulit, mendukung sistem imun, serta membantu detoks ringan.",
+        kandungan: "Beet, Apel, Wortel, Nanas",
         varian: [
             { ukuran: "50ml", harga: HARGA["50ml"], stok: 70 },
             { ukuran: "100ml", harga: HARGA["100ml"], stok: 45 },
@@ -57,9 +58,9 @@ const INITIAL_PRODUCTS: Product[] = [
         status: "Tersedia",
     },
     {
-        id: 4, nama: "Sejuba Berry Blend", jenis: "Antioksidan",
-        deskripsi: "Campuran berry pilihan kaya vitamin C dan antioksidan.",
-        kandungan: "Blueberry, Strawberry, Raspberry, Madu, Lemon",
+        id: 4, nama: "Yellow Series", jenis: "Cold Pressed Juice",
+        deskripsi: "Memperkuat imun, melawan radikal bebas, mendukung metabolisme, membantu pencernaan, serta baik untuk jantung dan gula darah.",
+        kandungan: "Pir, Nanas, Jahe",
         varian: [
             { ukuran: "50ml", harga: HARGA["50ml"], stok: 0 },
             { ukuran: "100ml", harga: HARGA["100ml"], stok: 0 },
@@ -68,9 +69,9 @@ const INITIAL_PRODUCTS: Product[] = [
         status: "Habis",
     },
     {
-        id: 5, nama: "Sejuba Mango Glow", jenis: "Vitamin",
-        deskripsi: "Minuman mango segar dengan kolagen untuk kulit sehat.",
-        kandungan: "Mangga Harum Manis, Kunyit, Madu, Kolagen Ikan, Lemon",
+        id: 5, nama: "Purple Series", jenis: "Infused Water Drink",
+        deskripsi: "Kaya antioksidan, membantu relaksasi, mendukung pencernaan, memperkuat imun, serta menyegarkan tubuh.",
+        kandungan: "Bunga Telang, Sereh, Lemon, Jahe",
         varian: [
             { ukuran: "50ml", harga: HARGA["50ml"], stok: 90 },
             { ukuran: "100ml", harga: HARGA["100ml"], stok: 65 },
@@ -79,9 +80,9 @@ const INITIAL_PRODUCTS: Product[] = [
         status: "Tersedia",
     },
     {
-        id: 6, nama: "Sejuba Apple Fiber", jenis: "Serat",
-        deskripsi: "Minuman apel kaya serat untuk menjaga pencernaan.",
-        kandungan: "Apel Malang, Psyllium Husk, Kayu Manis, Madu, Lemon",
+        id: 6, nama: "Blue Series", jenis: "Infused Water Drink",
+        deskripsi: "Menjaga kesehatan jantung & metabolisme, memberi energi alami, mendukung pencernaan, meredakan inflamasi ringan, serta meningkatkan sistem imun.",
+        kandungan: "Spirulina, Sereh, Lemon, Jahe",
         varian: [
             { ukuran: "50ml", harga: HARGA["50ml"], stok: 0 },
             { ukuran: "100ml", harga: HARGA["100ml"], stok: 0 },
@@ -89,40 +90,13 @@ const INITIAL_PRODUCTS: Product[] = [
         ],
         status: "Habis",
     },
-    {
-        id: 7, nama: "Sejuba Watermelon Refresh", jenis: "Segar",
-        deskripsi: "Semangka segar untuk rehidrasi tubuh di hari panas.",
-        kandungan: "Semangka, Mint, Lemon, Garam Himalaya, Madu",
-        varian: [
-            { ukuran: "50ml", harga: HARGA["50ml"], stok: 55 },
-            { ukuran: "100ml", harga: HARGA["100ml"], stok: 40 },
-            { ukuran: "250ml", harga: HARGA["250ml"], stok: 20 },
-        ],
-        status: "Tersedia",
-    },
-    {
-        id: 8, nama: "Sejuba Ginger Immunity", jenis: "Imun",
-        deskripsi: "Jahe dan kunyit untuk menjaga daya tahan tubuh.",
-        kandungan: "Jahe Merah, Kunyit, Temulawak, Madu, Lemon",
-        varian: [
-            { ukuran: "50ml", harga: HARGA["50ml"], stok: 60 },
-            { ukuran: "100ml", harga: HARGA["100ml"], stok: 50 },
-            { ukuran: "250ml", harga: HARGA["250ml"], stok: 25 },
-        ],
-        status: "Tersedia",
-    },
 ];
 
-const JENIS_LIST = ["Semua", "Detox", "Energi", "Segar", "Antioksidan", "Vitamin", "Serat", "Imun"];
+const JENIS_LIST = ["Semua", "Cold Pressed Juice", "Infused Water Drink"];
 
 const JENIS_COLORS: Record<string, { bg: string; color: string }> = {
-    Detox: { bg: "#d1fae5", color: "#065f46" },
-    Energi: { bg: "#fef3c7", color: "#92400e" },
-    Segar: { bg: "#dbeafe", color: "#1e3a5f" },
-    Antioksidan: { bg: "#ede9fe", color: "#4c1d95" },
-    Vitamin: { bg: "#fce7f3", color: "#831843" },
-    Serat: { bg: "#d1fae5", color: "#14532d" },
-    Imun: { bg: "#e0f2fe", color: "#0c4a6e" },
+    "Cold Pressed Juice": { bg: "#d1fae5", color: "#065f46" },
+    "Infused Water Drink": { bg: "#dbeafe", color: "#1e3a5f" },
 };
 
 const P = "#52b788";
@@ -150,12 +124,22 @@ function ProductModal({
 }) {
     const [form, setForm] = useState<Omit<Product, "id">>({
         nama: initial?.nama ?? "",
-        jenis: initial?.jenis ?? "Detox",
+        jenis: initial?.jenis ?? "Cold Pressed Juice",
         deskripsi: initial?.deskripsi ?? "",
         kandungan: initial?.kandungan ?? "",
         status: initial?.status ?? "Tersedia",
         varian: initial?.varian ?? UKURAN_LIST.map(u => ({ ukuran: u, harga: HARGA[u], stok: 0 })),
+        foto: initial?.foto ?? "",
     });
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => setForm(f => ({ ...f, foto: reader.result as string }));
+        reader.readAsDataURL(file);
+    };
 
     if (!open) return null;
 
@@ -174,6 +158,60 @@ function ProductModal({
                 <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: "0 0 20px" }}>
                     {initial?.id ? "✏️ Edit Produk" : "➕ Tambah Produk"}
                 </h3>
+
+                {/* Foto Produk */}
+                <div style={{ marginBottom: 18 }}>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: DK, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Foto Produk</label>
+                    <div
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{
+                            width: "100%", height: 130, borderRadius: 12,
+                            border: "2px dashed #95d5b2",
+                            background: form.foto ? "transparent" : "#f0faf4",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            cursor: "pointer", overflow: "hidden", position: "relative",
+                            transition: "border-color 0.2s, background 0.2s",
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = P; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#95d5b2"; }}
+                    >
+                        {form.foto ? (
+                            <>
+                                <img src={form.foto} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                <div style={{
+                                    position: "absolute", inset: 0, background: "rgba(27,67,50,0.45)",
+                                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                                    opacity: 0, transition: "opacity 0.2s",
+                                }}
+                                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0"; }}
+                                >
+                                    <span style={{ fontSize: 22 }}>🖼️</span>
+                                    <span style={{ fontSize: 11, color: "#fff", fontWeight: 600, marginTop: 4 }}>Ganti Foto</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ textAlign: "center" }}>
+                                <div style={{ fontSize: 32, marginBottom: 6 }}>📷</div>
+                                <div style={{ fontSize: 12, color: P, fontWeight: 600 }}>Klik untuk upload foto</div>
+                                <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 3 }}>PNG, JPG, WEBP maks. 5MB</div>
+                            </div>
+                        )}
+                    </div>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFotoChange}
+                        style={{ display: "none" }}
+                    />
+                    {form.foto && (
+                        <button
+                            onClick={() => setForm(f => ({ ...f, foto: "" }))}
+                            style={{ marginTop: 6, fontSize: 11, color: "#ef4444", background: "none", border: "none", cursor: "pointer", fontFamily: "'Poppins', sans-serif", fontWeight: 600, padding: 0 }}
+                        >✕ Hapus foto</button>
+                    )}
+                </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
                     <div style={{ gridColumn: "1/-1" }}>{inp("Nama Produk", form.nama, v => setForm(f => ({ ...f, nama: v })))}</div>
@@ -266,7 +304,11 @@ function DetailDrawer({ product, onClose }: { product: Product; onClose: () => v
                     <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9ca3af" }}>✕</button>
                 </div>
 
-                <div style={{ background: "linear-gradient(135deg, #d8f3dc, #b7e4c7)", borderRadius: 16, height: 140, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64, marginBottom: 20 }}>🌿</div>
+                {product.foto ? (
+                    <img src={product.foto} alt={product.nama} style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 16, marginBottom: 20, display: "block" }} />
+                ) : (
+                    <div style={{ background: "linear-gradient(135deg, #d8f3dc, #b7e4c7)", borderRadius: 16, height: 140, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64, marginBottom: 20 }}>🌿</div>
+                )}
 
                 <h2 style={{ fontSize: 18, fontWeight: 700, color: DK, margin: "0 0 8px" }}>{product.nama}</h2>
                 <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
@@ -340,7 +382,7 @@ export default function ProdukPage() {
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
                 <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Produk 🌿</h2>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Produk</h2>
                     <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0" }}>{products.length} produk terdaftar dalam sistem</p>
                 </div>
                 <button onClick={() => setShowAdd(true)} style={{ display: "flex", alignItems: "center", gap: 8, background: P, color: "#fff", border: "none", padding: "12px 22px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 14px rgba(82,183,136,0.35)", transition: "all 0.2s" }}
@@ -391,7 +433,11 @@ export default function ProdukPage() {
                                         <td style={{ padding: "12px 16px", fontSize: 12, color: "#9ca3af", fontWeight: 600, borderBottom: `1px solid ${BORDER}` }}>{idx + 1}</td>
                                         {/* Foto */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
-                                            <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #d8f3dc, #95d5b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🌿</div>
+                                            {p.foto ? (
+                                                <img src={p.foto} alt={p.nama} style={{ width: 38, height: 38, borderRadius: 10, objectFit: "cover", display: "block" }} />
+                                            ) : (
+                                                <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #d8f3dc, #95d5b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🌿</div>
+                                            )}
                                         </td>
                                         {/* Nama + deskripsi */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, minWidth: 160 }}>

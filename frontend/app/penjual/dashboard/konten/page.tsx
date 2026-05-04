@@ -24,13 +24,13 @@ interface PageContent {
 
 // ── Default data ─────────────────────────────────────────
 const DEFAULT_PAGES: Record<string, PageContent> = {
-    "HOME PAGE": {
+    "BERANDA": {
         sections: [
             { id: 1, type: "teks", content: "Selamat datang di **Sejuba Drink** — minuman sehat untuk gaya hidup aktif Anda!", editing: false },
             { id: 2, type: "gambar", content: "", editing: false },
         ],
     },
-    "TENTANG KAMI": {
+    "TENTANG": {
         sections: [
             { id: 10, type: "teks", content: "Sejuba Drink adalah brand minuman kesehatan berbasis bahan-bahan alami pilihan Indonesia.", editing: false },
             { id: 11, type: "gambar", content: "", editing: false },
@@ -39,11 +39,6 @@ const DEFAULT_PAGES: Record<string, PageContent> = {
     "PRODUK": {
         sections: [
             { id: 20, type: "teks", content: "Temukan berbagai pilihan minuman sehat Sejuba Drink untuk mendukung gaya hidupmu.", editing: false },
-        ],
-    },
-    "KONTAK": {
-        sections: [
-            { id: 30, type: "teks", content: "Hubungi kami melalui email: hello@sejubadrink.com atau WhatsApp: +62 812-xxxx-xxxx", editing: false },
         ],
     },
 };
@@ -316,7 +311,7 @@ export default function KontenPage() {
 
             {/* Header */}
             <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Konten 📌</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Konten</h2>
                 <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0" }}>Edit konten halaman website Sejuba Drink.</p>
             </div>
 

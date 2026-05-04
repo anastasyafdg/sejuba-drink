@@ -20,7 +20,7 @@ const STATS = [
         value: 30,
         suffix: "item",
         color: "primary" as const,
-        change: "+3",
+        change: "",
         changeType: "up" as const,
         icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -37,7 +37,7 @@ const STATS = [
         value: 18,
         suffix: "pesanan",
         color: "amber" as const,
-        change: "+5",
+        change: "",
         changeType: "up" as const,
         icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -51,10 +51,10 @@ const STATS = [
     },
     {
         label: "Pelanggan",
-        value: 10,
+        value: 6,
         suffix: "orang",
         color: "blue" as const,
-        change: "+2",
+        change: "",
         changeType: "up" as const,
         icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -70,19 +70,18 @@ const STATS = [
 ];
 
 const RECENT_ORDERS = [
-    { id: "ORD-001", pelanggan: "Ahmad Hidayat", produk: "Green Series", total: 45000, status: "selesai", tanggal: "22 Apr 2026" },
-    { id: "ORD-002", pelanggan: "Siti Nurhaliza", produk: "Orange Series", total: 35000, status: "proses", tanggal: "22 Apr 2026" },
-    { id: "ORD-003", pelanggan: "Budi Santoso", produk: "Red Series", total: 55000, status: "dikirim", tanggal: "21 Apr 2026" },
-    { id: "ORD-004", pelanggan: "Dewi Lestari", produk: "Purple Lime", total: 40000, status: "pending", tanggal: "21 Apr 2026" },
-    { id: "ORD-005", pelanggan: "Rudi Hermawan", produk: "Yellow Series", total: 50000, status: "selesai", tanggal: "20 Apr 2026" },
-    { id: "ORD-006", pelanggan: "Maya Sari", produk: "Blue Lime", total: 38000, status: "selesai", tanggal: "20 Apr 2026" },
+    { id: "ORD-001", pelanggan: "Ameylia", produk: "Green Series", total: 45000, status: "selesai", tanggal: "22 Apr 2026" },
+    { id: "ORD-002", pelanggan: "Saskia", produk: "Orange Series", total: 35000, status: "proses", tanggal: "22 Apr 2026" },
+    { id: "ORD-003", pelanggan: "Jena", produk: "Red Series", total: 55000, status: "dikirim", tanggal: "21 Apr 2026" },
+    { id: "ORD-004", pelanggan: "Windy", produk: "Purple Lime", total: 40000, status: "selesai", tanggal: "21 Apr 2026" },
+    { id: "ORD-005", pelanggan: "Upay", produk: "Yellow Series", total: 50000, status: "selesai", tanggal: "20 Apr 2026" },
+    { id: "ORD-006", pelanggan: "Grace", produk: "Blue Series", total: 38000, status: "selesai", tanggal: "20 Apr 2026" },
 ];
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; dot: string; label: string }> = {
     selesai: { bg: "rgba(82,183,136,0.1)", color: "#1b7a4a", dot: "#52b788", label: "Selesai" },
     proses: { bg: "rgba(245,158,11,0.10)", color: "#92400e", dot: "#f59e0b", label: "Diproses" },
     dikirim: { bg: "rgba(59,130,246,0.10)", color: "#1e40af", dot: "#3b82f6", label: "Dikirim" },
-    pending: { bg: "rgba(239,68,68,0.10)", color: "#991b1b", dot: "#ef4444", label: "Pending" },
 };
 
 const QUICK_ACTIONS = [
