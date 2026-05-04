@@ -16,6 +16,7 @@ const allProducts = [
     ingredients: ["Pak Choy", "Timun", "Apel", "Nanas"],
     color: "#94AA66",
     bg: "#EFFBD7",
+    pattern: "/images/pattern/green1.png",
   },
   {
     id: "red",
@@ -27,6 +28,7 @@ const allProducts = [
     ingredients: ["Beet", "Apel", "Wortel", "Nanas"],
     color: "#C62828",
     bg: "#FFE5EC",
+    pattern: "/images/pattern/red1.png",
   },
   {
     id: "orange",
@@ -38,6 +40,7 @@ const allProducts = [
     ingredients: ["Apel", "Wortel", "Nanas"],
     color: "#FF6E3F",
     bg: "#FFECE5",
+    pattern: "/images/pattern/orange1.png",
   },
   {
     id: "yellow",
@@ -49,6 +52,7 @@ const allProducts = [
     ingredients: ["Pir", "Nanas", "Jahe"],
     color: "#FCD53C",
     bg: "#FDF8E6",
+    pattern: "/images/pattern/yellow1.png",
   },
   {
     id: "purple",
@@ -60,6 +64,7 @@ const allProducts = [
     ingredients: ["Bunga Telang", "Sereh", "Lemon", "Jahe"],
     color: "#7F3DA8",
     bg: "#F7EAFF",
+    pattern: "/images/pattern/purple1.png",
   },
   {
     id: "blue",
@@ -71,8 +76,9 @@ const allProducts = [
     ingredients: ["Spirulina", "Sereh", "Lemon", "Jahe"],
     color: "#1FA8D8",
     bg: "#D6F3FE",
+    pattern: "/images/pattern/blue1.png",
   },
-  
+
 ];
 
 export default function ProductSwitcher({ search = "" }: Props) {
@@ -95,7 +101,15 @@ export default function ProductSwitcher({ search = "" }: Props) {
   }
 
   return (
-    <div className="py-20 text-center px-4">
+    <div
+      className="py-20 text-center px-4 transition-all duration-500"
+      style={{
+        backgroundImage: `url('${current.pattern}')`,
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
+        backgroundColor: current.bg,
+      }}
+    >
       {/* LABEL */}
       <p className="text-gray-400 text-sm tracking-wide">
         {current.type?.toUpperCase()}
@@ -111,7 +125,7 @@ export default function ProductSwitcher({ search = "" }: Props) {
 
       {/* ================= PRODUK SECTION ================= */}
       <div className="flex justify-center items-center gap-16 mt-14 flex-wrap">
-        
+
         {/* CARD KIRI */}
         <div
           className="w-48 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] overflow-hidden"
@@ -120,9 +134,9 @@ export default function ProductSwitcher({ search = "" }: Props) {
           <div
             className="text-white text-sm font-semibold py-2 text-center rounded-t-2xl"
             style={{ backgroundColor: current.color }}
-         >
+          >
             Tentang Produk
-        </div>
+          </div>
 
           <div className="p-4 text-left text-sm">
             <p className="text-gray-400 text-xs">Jenis Produk</p>

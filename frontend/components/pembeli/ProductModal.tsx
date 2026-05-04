@@ -7,62 +7,113 @@ export default function ProductModal({ product, onClose, onAdd }: any) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl p-8 w-[700px] relative">
-        
+
+      {/* MODAL */}
+      <div className="bg-[#F4F4F4] rounded-[32px] px-12 py-8 w-[820px] relative">
+
+        {/* CLOSE */}
         <button
           onClick={onClose}
-          className="absolute right-6 top-4 text-orange-500 text-2xl"
+          className="absolute right-6 top-5 text-orange-500"
         >
-          ✕
+          <span className="material-symbols-outlined text-[28px]">
+            close
+          </span>
         </button>
 
-        <div className="flex gap-10 items-center">
-          <div className="bg-[#E5EFE7] p-6 rounded-2xl">
-            <img src={product.image} className="w-32" />
-          </div>
+        {/* GRID */}
+        <div className="grid grid-cols-[240px_1fr] gap-10 items-center">
 
-          <div className="flex-1">
-            <p className="text-gray-400 text-xs">COLD PRESSED JUICE</p>
-            <h2 className="text-xl font-semibold">{product.name}</h2>
+          {/* ================= LEFT ================= */}
+          <div className="flex flex-col items-start">
 
-            {/* SIZE */}
-            <div className="flex gap-4 mt-4">
-              {product.sizes.map((s: any, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => setSize(s)}
-                  className={`px-4 py-1 rounded-full text-sm ${
-                    size.label === s.label
-                      ? "bg-green-200"
-                      : "bg-gray-100"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
+            <div className="bg-[#DCE5DE] rounded-[20px] flex items-center justify-center p-6 w-[220px] h-[220px]">
+              <img src={product.image} className="w-[130px]" />
             </div>
 
-            {/* PRICE */}
-            <p className="mt-3 text-orange-500 font-semibold">
-              Rp. {size.price.toLocaleString()}
-            </p>
+            <div className="mt-5">
+              <p className="text-xs text-gray-400 tracking-wide">
+                COLD PRESSED JUICE
+              </p>
 
-            {/* QTY */}
-            <div className="flex items-center gap-4 mt-6">
-              <button onClick={() => setQty(Math.max(1, qty - 1))}>-</button>
-              <span>{qty}</span>
-              <button onClick={() => setQty(qty + 1)}>+</button>
+              <h2 className="text-[20px] font-semibold mt-1">
+                {product.name}
+              </h2>
+            </div>
 
+          </div>
+
+          {/* ================= RIGHT ================= */}
+          <div className="flex flex-col items-center">
+
+            {/* SIZE + PRICE */}
+            <div className="flex gap-12 justify-start w-full">
+
+              {product.sizes.map((s: any, i: number) => (
+                <div
+                  key={i}
+                  onClick={() => setSize(s)}
+                  className="flex flex-col items-center cursor-pointer"
+                >
+                  <div
+                    className={`px-6 py-2 rounded-full text-sm ${size.label === s.label
+                      ? "bg-[#DCE5DE]"
+                      : "bg-[#E6E6E6]"
+                      }`}
+                  >
+                    {s.label}
+                  </div>
+
+                  <p className="mt-2 text-sm">
+                    Rp. {s.price.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+
+            </div>
+
+            {/* QTY + BUTTON */}
+            <div className="flex items-center justify-center gap-5 mt-8">
+
+              {/* MINUS */}
+              <button
+                onClick={() => setQty(Math.max(1, qty - 1))}
+                className="w-9 h-9 border rounded-md flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  remove
+                </span>
+              </button>
+
+              {/* QTY */}
+              <span className="text-base font-medium">{qty}</span>
+
+              {/* PLUS */}
+              <button
+                onClick={() => setQty(qty + 1)}
+                className="w-9 h-9 border rounded-md flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  add
+                </span>
+              </button>
+
+              {/* BUTTON */}
               <button
                 onClick={() => {
                   onAdd({ ...product, ...size, qty });
                   onClose();
                 }}
-                className="ml-6 border border-orange-500 text-orange-500 px-4 py-1 rounded-lg"
+                className="ml-4 flex items-center gap-2 border border-orange-500 text-orange-500 px-5 py-2 rounded-lg hover:bg-orange-50 transition"
               >
-                🛒 Masukan Keranjang
+                <span className="material-symbols-outlined text-[18px]">
+                  shopping_cart
+                </span>
+                Masukan Keranjang
               </button>
+
             </div>
+
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const navItems = [
   { name: "Beranda", href: "/pembeli" },
@@ -15,13 +15,34 @@ const navItems = [
 export default function NavbarPembeli() {
   const pathname = usePathname();
   const isProdukPage = pathname === "/pembeli/produk";
+  const isLoginPage = pathname === "/pembeli/login";
 
   const [search, setSearch] = useState("");
+  
+  // Mock login state for demonstration
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  if (isLoginPage) return null;
 
   return (
-    <header className="w-full px-6 md:px-10 py-3">
+    <header className="absolute top-0 left-0 w-full px-6 md:px-10 py-3 z-50">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
-        
+
         {/* LOGO */}
         <Link href="/pembeli" className="flex items-center">
           <Image
@@ -37,7 +58,7 @@ export default function NavbarPembeli() {
         {isProdukPage && (
           <div className="hidden md:flex items-center bg-[#E5EFE7] rounded-full px-4 py-2 w-[300px]">
             <span className="material-symbols-outlined mr-2 text-gray-500 text-[20px]">
-              search 
+              search
             </span>
             <input
               type="text"
@@ -49,26 +70,82 @@ export default function NavbarPembeli() {
           </div>
         )}
 
-        {/* MENU */}
-        <nav className="hidden md:flex items-center gap-5">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
+        {/* RIGHT SIDE: MENU + USER ICON */}
+        <div className="flex items-center gap-6">
+          {/* MENU */}
+          <nav className="hidden md:flex items-center gap-3">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
 
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`rounded-full border px-5 py-1.5 text-sm font-medium transition ${
-                  isActive
-                    ? "bg-orange-500 text-white border-orange-500"
-                    : "border-gray-400 text-gray-700 hover:bg-gray-100"
-                }`}
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`rounded-full border px-5 py-1.5 text-sm font-medium transition ${isActive
+                    ? "bg-[#F59B22] text-white border-[#F59B22]"
+                    : "border-gray-400 text-gray-600 hover:bg-gray-100"
+                    }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* USER ICON */}
+          {isLoggedIn ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-600 text-gray-600 hover:bg-gray-100 transition shrink-0 focus:outline-none"
+                title="Profil Pengguna"
               >
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 overflow-hidden">
+                  <Link
+                    href="/pembeli/riwayat-pemesanan"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#E5EFE7] transition-colors"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Riwayat Pemesanan
+                  </Link>
+                  <Link
+                    href="/pembeli/ulasan"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#E5EFE7] transition-colors"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Ulasan dan Rating
+                  </Link>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <button
+                    onClick={() => {
+                      setIsLoggedIn(false);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Keluar
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/pembeli/login"
+              className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-600 text-gray-600 hover:bg-gray-100 transition shrink-0"
+              title="Masuk / Daftar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+              </svg>
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );

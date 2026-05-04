@@ -31,8 +31,15 @@ export default function TentangPage() {
   return (
     <div className="w-full">
       {/* HERO SECTION */}
-      <section className="bg-[#f8f8f3]">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-10 md:grid-cols-2 md:px-14 md:py-16">
+      <section
+        className="bg-[#f8f8f3]"
+        style={{
+          backgroundImage: "url('/images/pattern/beranda1.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
+        }}
+      >
+        <div className="mx-auto grid max-w-[1440px] items-center gap-6 px-8 py-10 md:grid-cols-[1fr_1.6fr] md:px-14 md:pt-28">
           <div>
             <h1 className="text-[36px] font-extrabold text-[#F59B22] md:text-[56px]">
               Tentang Kami
@@ -45,13 +52,13 @@ export default function TentangPage() {
             </p>
           </div>
 
-          <div className="flex justify-center md:justify-end">
+          <div className="flex justify-center md:justify-end overflow-visible">
             <Image
               src="/images/tentang/tentang2.png"
               alt="Produk Sejuba Drink"
               width={1113}
               height={742}
-              className="h-auto w-full max-w-[800px]"
+              className="h-auto w-full"
               priority
             />
           </div>
@@ -103,53 +110,62 @@ export default function TentangPage() {
 
       {/* TESTIMONI */}
       <section
-        className="py-20"
+        className="bg-[#f8f8f3]"
         style={{
-          backgroundImage: "url('/images/decorations/bg-pattern.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundImage: "url('/images/pattern/tentang1.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
         }}
       >
-        <div className="mx-auto max-w-7xl px-8 md:px-14">
-          <div className="rounded-[32px] bg-[#F5A12A] px-6 py-10 md:px-12 md:py-14">
-            <h2 className="text-center text-[32px] font-bold text-white md:text-[52px]">
-              Experience The Freshness
-            </h2>
+        <section
+          className="py-20"
+          style={{
+            backgroundImage: "url('/images/decorations/bg-pattern.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="mx-auto max-w-7xl px-8 md:px-14">
+            <div className="rounded-[32px] bg-[#F5A12A] px-6 py-10 md:px-12 md:py-14">
+              <h2 className="text-center text-[32px] font-bold text-white md:text-[52px]">
+                Experience The Freshness
+              </h2>
 
-            <div className="mt-12 grid gap-8 md:grid-cols-3">
-              {testimonials.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-[24px] bg-[#F8F1E8] p-6 shadow-md"
-                >
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={260}
-                    height={220}
-                    className="h-[220px] w-full rounded-[18px] object-cover"
-                  />
+              <div className="mt-12 grid gap-8 md:grid-cols-3">
+                {testimonials.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-[24px] bg-[#F8F1E8] p-6 shadow-md"
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={260}
+                      height={220}
+                      className="h-[220px] w-full rounded-[18px] object-cover"
+                    />
 
-                  <h3 className="mt-5 text-[24px] font-bold text-[#1f1f1f]">
-                    {item.name}
-                  </h3>
+                    <h3 className="mt-5 text-[24px] font-bold text-[#1f1f1f]">
+                      {item.name}
+                    </h3>
 
-                  <p className="mt-1 text-[18px] font-semibold text-[#1f1f1f]">
-                    {item.age}
-                  </p>
+                    <p className="mt-1 text-[18px] font-semibold text-[#1f1f1f]">
+                      {item.age}
+                    </p>
 
-                  <p className="mt-5 text-[15px] leading-7 text-[#333333]">
-                    "{item.quote}"
-                  </p>
-                </div>
-              ))}
+                    <p className="mt-5 text-[15px] leading-7 text-[#333333]">
+                      "{item.quote}"
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       </section>
 
       {/* MASA DEPAN SEHAT */}
-      <section className="bg-[#9BBE87] py-16 md:py-20">
+      <section className="bg-[#9BBE87] py-16 md:py-20 pb-20">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-8 md:grid-cols-2 md:px-14">
           <div className="flex justify-center md:justify-start">
             <Image
@@ -185,6 +201,16 @@ export default function TentangPage() {
             </div>
           </div>
         </div>
+      </section>
+      <section
+        className="bg-[#f8f8f3] py-20 min-h-[200px]"
+        style={{
+          backgroundImage: "url('/images/pattern/tentang1.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
+        }}
+      >
+
       </section>
     </div>
   );

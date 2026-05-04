@@ -1,11 +1,21 @@
+"use client";
+
+import Link from "next/link";
 import Image from "next/image";
 
 export default function PembeliPage() {
   return (
     <div className="w-full">
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-[#f8f8f3]">
-        <div className="mx-auto grid max-w-7xl gap-10 px-8 pt-8 md:grid-cols-2 md:px-14 md:pt-10">
+      <section
+        className="relative overflow-hidden bg-[#f8f8f3]"
+        style={{
+          backgroundImage: "url('/images/pattern/beranda1.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
+        }}
+      >
+        <div className="mx-auto grid max-w-7xl gap-10 px-8 pt-32 md:grid-cols-2 md:px-14 md:pt-48">
           {/* KIRI */}
           <div className="flex flex-col justify-start">
             <h1 className="max-w-[520px] text-[42px] font-extrabold leading-[1.08] md:text-[64px]">
@@ -62,10 +72,11 @@ export default function PembeliPage() {
               dapat dinikmati oleh semua kalangan, mulai dari anak-anak hingga
               orang dewasa.
             </p>
-
-            <button className="mt-10 rounded-full bg-[#F5A623] px-8 py-3 text-sm font-semibold text-white shadow hover:opacity-90">
-              Selengkapnya
-            </button>
+            <Link href="/pembeli/tentang">
+              <button className="mt-10 rounded-full bg-[#F5A623] px-8 py-3 text-sm font-semibold text-white shadow hover:opacity-90">
+                Selengkapnya
+              </button>
+            </Link>
           </div>
 
           <div className="flex justify-center md:justify-end">
@@ -82,11 +93,11 @@ export default function PembeliPage() {
 
       {/* PRODUK SECTION */}
       <section
-        className="bg-[#f8f8f3] py-20"
+        className="bg-[#f8f8f3] pt-20 pb-32"
         style={{
-          backgroundImage: "url('/images/decorations/bg-pattern.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundImage: "url('/images/pattern/beranda2.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
         }}
       >
         <div className="mx-auto max-w-7xl px-8 text-center md:px-14">
@@ -108,15 +119,20 @@ export default function PembeliPage() {
           <div className="mt-10 text-lg leading-9 text-gray-700">
             <p>
               Jelajahi rangkaian produk Sejuba Drink dan{" "}
-              <span className="font-medium text-[#5E8E1B] underline">
-                temukan rasa favoritmu.
-              </span>
+              <Link href="/pembeli/produk">
+                <span className="font-medium text-[#5E8E1B] underline hover:opacity-80 cursor-pointer">
+                  temukan rasa favoritmu.
+                </span>
+              </Link>
             </p>
+
             <p>
               Jangan tunda—segarin harimu,{" "}
-              <span className="font-medium text-[#F59B22] underline">
-                pesan sekarang!
-              </span>
+              <Link href="/pembeli/pemesanan">
+                <span className="font-medium text-[#F59B22] underline hover:opacity-80 cursor-pointer">
+                  pesan sekarang!
+                </span>
+              </Link>
             </p>
           </div>
         </div>

@@ -32,7 +32,7 @@ const products = [
     id: 3,
     name: "Orange Series",
     image: "/images/produk/orange.png",
-     bg: "#FFECE5",
+    bg: "#FFECE5",
     sizes: [
       { label: "250 ml", price: 29500 },
       { label: "100 ml", price: 15500 },
@@ -79,77 +79,100 @@ export default function PemesananPage() {
   const [cart, setCart] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
 
+  const [animateCart, setAnimateCart] = useState(false);
+  const [toast, setToast] = useState("");
+
   return (
     <>
       {/* ================= HEADER ================= */}
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        
-        {/* TITLE */}
-        <h1 className="text-4xl font-bold text-orange-500">
-          Pilih Kesukaanmu!
-        </h1>
+      <section
+        className="bg-[#f8f8f3] pb-28"
+        style={{
+          backgroundImage: "url('/images/pattern/beranda1.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-16 md:pt-48">
 
-        {/* SUBTITLE */}
-        <p className="mt-3 text-gray-600 max-w-xl">
-          Pilih produk Sejuba Drink sesuai pilihanmu dan rasakan kesegaran
-          alaminya dalam setiap tegukan.
-        </p>
+          {/* TITLE */}
+          <h1 className="text-4xl font-bold text-orange-500">
+            Pilih Kesukaanmu!
+          </h1>
 
-        {/* ================= CART ICON ================= */}
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={() => setOpen(true)}
-            className="relative bg-orange-500 text-white p-3 rounded-xl shadow-md hover:scale-105 transition"
-          >
-            <span className="material-symbols-outlined text-[22px]">
-              shopping_cart
-            </span>
+          {/* SUBTITLE */}
+          <p className="mt-3 text-gray-600 max-w-xl">
+            Pilih produk Sejuba Drink sesuai pilihanmu dan rasakan kesegaran
+            alaminya dalam setiap tegukan.
+          </p>
 
-            {/* BADGE */}
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#6BAA4F] text-white text-[10px] px-1.5 py-[2px] rounded-full">
-                {cart.length}
+          {/* ================= CART ICON ================= */}
+          <div className="flex justify-end mt-6 pr-8">
+            <button
+              onClick={() => setOpen(true)}
+              className={`relative bg-orange-500 text-white p-3 rounded-xl shadow-md transition ${animateCart ? "scale-125" : "scale-100"
+                }`}
+            >
+              <span className="material-symbols-outlined text-[22px]">
+                shopping_cart
               </span>
-            )}
-          </button>
+
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#6BAA4F] text-white text-[10px] px-1.5 py-[2px] rounded-full">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+
+          {/* ================= GRID PRODUK ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-14 mt-12">
+            {products.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onClick={setSelected}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* ================= GRID PRODUK ================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-14 mt-12">
-          {products.map((p) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onClick={setSelected}
-            />
-          ))}
-        </div>
-      </div>
+        {/* ================= MODAL ================= */}
+        {selected && (
+          <ProductModal
+            product={selected}
+            onClose={() => setSelected(null)}
+            onAdd={(item: any) => {
+              setCart((prev) => [...prev, item]);
 
-      {/* ================= MODAL ================= */}
-      {selected && (
-        <ProductModal
-          product={selected}
-          onClose={() => setSelected(null)}
-          onAdd={(item: any) => {
-            setCart((prev) => [...prev, item]);
-            setOpen(true);
-          }}
+              setAnimateCart(true);
+              setTimeout(() => setAnimateCart(false), 300);
+
+              setToast("Produk ditambahkan ke keranjang");
+              setTimeout(() => setToast(""), 2000);
+            }}
+          />
+        )}
+
+        {/* ================= SIDEBAR ================= */}
+        <CartSidebar
+          open={open}
+          setOpen={setOpen}
+          cart={cart}
+          setCart={setCart}
         />
-      )}
-
-      {/* ================= SIDEBAR ================= */}
-      <CartSidebar open={open} setOpen={setOpen} cart={cart} />
+      </section>
 
       {/* ================= CARA PEMESANAN ================= */}
-      <div className="bg-[#6FAE54] py-24 mt-28 mb-20">
-        
+      <div className="bg-[#6FAE54] py-24  mb-32">
+
         <h2 className="text-center text-[32px] font-bold text-white mb-14">
           Cara Pemesanan
         </h2>
 
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-12 px-6">
-          
+
           {/* CARD 1 */}
           <div className="bg-[#F59E2E] text-white p-6 rounded-[20px] text-center shadow-md h-[260px] flex flex-col justify-center">
             <h3 className="font-semibold text-sm mb-4 leading-snug">
@@ -205,4 +228,12 @@ export default function PemesananPage() {
       </div>
     </>
   );
+
+  {
+    toast && (
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-full text-sm shadow-lg z-50">
+        {toast}
+      </div>
+    )
+  }
 }

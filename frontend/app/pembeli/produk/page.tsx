@@ -8,34 +8,41 @@ export default function ProdukPage() {
   return (
     <>
       {/* ================= HERO ================= */}
-      <div className="text-center py-16 px-4">
-        
-        {/* TITLE */}
-        <h1 className="text-4xl font-bold text-orange-500">
-          Produk Sejuba
-        </h1>
+      <section
+        className="bg-[#f8f8f3]"
+        style={{
+          backgroundImage: "url('/images/pattern/beranda1.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
+        }}
+      >
+        <div className="text-center py-16 px-4 md:pt-48">
+          <h1 className="text-4xl font-bold text-orange-500">
+            Produk Sejuba
+          </h1>
 
-        {/* SUBTITLE */}
-        <p className="mt-4 text-gray-600">
-          Yuk, Temukan Varian Favoritmu!
-        </p>
+          <p className="mt-4 text-gray-600">
+            Yuk, Temukan Varian Favoritmu!
+          </p>
 
-        {/* IMAGE */}
-        <div className="mt-8 flex justify-center">
-          <img
-            src="/images/produk/produk1.1.png"
-            alt="produk sejuba"
-            className="w-[600px]"
-          />
+
+          <div className="mt-8 flex justify-center">
+            <img
+              src="/images/produk/produk1.1.png"
+              alt="produk sejuba"
+              className="w-[600px]"
+            />
+          </div>
         </div>
-      </div>
+        <div className="mt-6 h-20 bg-gradient-to-b from-[#f8f8f3] to-[#9BBE87] md:mt-8 md:h-28" />
+      </section>
 
       {/* ================= PRODUCT SWITCHER ================= */}
       <ProductSwitcher search={search} />
 
       {/* ================= SECTION GAMBAR + HIJAU ================= */}
-      <div className="grid md:grid-cols-2 mt-20">
-        
+      <div className="grid md:grid-cols-2">
+
         {/* KIRI */}
         <div>
           <img
@@ -73,14 +80,15 @@ export default function ProdukPage() {
       </div>
 
       {/* ================= TEXT BESAR ================= */}
-      <div className="text-center py-20 bg-[#F5F5F5] px-4">
-        <p className="text-xl font-medium max-w-2xl mx-auto leading-relaxed text-gray-700">
-          <span className="text-orange-500 font-semibold">
+      <div className="text-center py-36 bg-white px-6">
+        <p className="text-2xl md:text-4xl font-bold max-w-3xl mx-auto leading-snug text-[#7F7F7F]">
+          <span className="text-[#FA5318]">
             100% Buah Alami
           </span>{" "}
-          , tanpa air dan gula tambahan. Baik dikonsumsi setiap hari. <br />
+          , tanpa air dan gula tambahan. Baik dikonsumsi setiap hari.{" "}
+          <br className="hidden md:block" />
           Setiap tetes Sejuba adalah{" "}
-          <span className="text-green-600 font-semibold">
+          <span className="text-[#445C49]">
             kesegaran murni dari alam.
           </span>
         </p>

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Leaflet perlu ditranspile agar tidak error di Next.js SSR
+  transpilePackages: ["leaflet"],
 };
 
 export default nextConfig;
