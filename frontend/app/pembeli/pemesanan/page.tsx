@@ -201,7 +201,7 @@ export default function PemesananPage() {
             </span>
 
             <p className="text-xs leading-relaxed">
-              Isi alamat pengiriman dan metode pembayaran pilihan kamu.
+              Isi alamat pengiriman dan metode pembayaran menggunakan QRIS.
               Selanjutnya, lakukan pembayaran agar produk yang kamu pilih
               dapat diproses pengirimannya.
             </p>
@@ -220,7 +220,7 @@ export default function PemesananPage() {
             <p className="text-xs leading-relaxed">
               Setelah proses pembayaran terkonfirmasi, produk pesanan kamu
               akan dikirim di hari yang sama. Kamu bisa menunggu dan melihat
-              track perjalanan melalui WhatsApp dan Gojek.
+              track perjalanan melalui halaman riwayat pemesanan.
             </p>
           </div>
 
