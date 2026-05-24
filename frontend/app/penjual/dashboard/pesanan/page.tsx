@@ -8,21 +8,24 @@ type StatusPesanan = "Diproses" | "Dikirim" | "Selesai";
 interface Pesanan {
     id: string;
     pelanggan: string;
+    noTelepon: string;
     produk: string;
     qty: number;
     total: number;
+    ongkir: number;
     status: StatusPesanan;
     tanggal: string;
+    alamat?: string;
 }
 
 /* ── Dummy Data ── */
 const INITIAL_PESANAN: Pesanan[] = [
-    { id: "SJB-001", pelanggan: "Ameylia", produk: "Green Series", qty: 2, total: 45000, status: "Selesai", tanggal: "22 April 2026" },
-    { id: "SJB-002", pelanggan: "Saskia", produk: "Orange Series", qty: 3, total: 35000, status: "Diproses", tanggal: "22 April 2026" },
-    { id: "SJB-003", pelanggan: "Jena", produk: "Red Series", qty: 1, total: 55000, status: "Dikirim", tanggal: "21 April 2026" },
-    { id: "SJB-004", pelanggan: "Windy", produk: "Purple Series", qty: 4, total: 40000, status: "Selesai", tanggal: "21 April 2026" },
-    { id: "SJB-005", pelanggan: "Upay", produk: "Yellow Series", qty: 2, total: 50000, status: "Selesai", tanggal: "20 April 2026" },
-    { id: "SJB-006", pelanggan: "Grace", produk: "Blue Series", qty: 5, total: 38000, status: "Selesai", tanggal: "20 April 2026" }
+    { id: "SJB-001", pelanggan: "Ameylia", noTelepon: "0812-3456-7890", produk: "Green Series", qty: 2, total: 45000, ongkir: 10000, status: "Selesai", tanggal: "22 April 2026", alamat: "Jl. Melati No. 12, Bandung" },
+    { id: "SJB-002", pelanggan: "Saskia", noTelepon: "0856-7890-1234", produk: "Orange Series", qty: 3, total: 35000, ongkir: 10000, status: "Diproses", tanggal: "22 April 2026", alamat: "Jl. Mawar No. 5, Jakarta" },
+    { id: "SJB-003", pelanggan: "Jena", noTelepon: "0878-1234-5678", produk: "Red Series", qty: 1, total: 55000, ongkir: 15000, status: "Dikirim", tanggal: "21 April 2026", alamat: "Jl. Kenanga No. 8, Surabaya" },
+    { id: "SJB-004", pelanggan: "Windy", noTelepon: "0821-9876-5432", produk: "Purple Series", qty: 4, total: 40000, ongkir: 10000, status: "Selesai", tanggal: "21 April 2026", alamat: "Jl. Anggrek No. 3, Yogyakarta" },
+    { id: "SJB-005", pelanggan: "Upay", noTelepon: "0895-5555-4444", produk: "Yellow Series", qty: 2, total: 50000, ongkir: 10000, status: "Selesai", tanggal: "20 April 2026", alamat: "Jl. Dahlia No. 17, Malang" },
+    { id: "SJB-006", pelanggan: "Grace", noTelepon: "0813-2222-3333", produk: "Blue Series", qty: 5, total: 38000, ongkir: 15000, status: "Selesai", tanggal: "20 April 2026", alamat: "Jl. Tulip No. 9, Bekasi" },
 ];
 
 /* ── Helpers ── */
@@ -48,103 +51,74 @@ function avatarColor(name: string) {
     return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
-/* ── Tambah Pesanan Modal ── */
-function TambahModal({ onClose, onSave }: { onClose: () => void; onSave: (p: Pesanan) => void }) {
-    const [form, setForm] = useState({ pelanggan: "", produk: "", qty: 1, total: 0, status: "Diproses" as StatusPesanan, tanggal: "" });
-    const [error, setError] = useState("");
-
-    const handleSave = () => {
-        if (!form.pelanggan.trim() || !form.produk.trim() || !form.tanggal.trim()) {
-            setError("Nama pelanggan, produk, dan tanggal wajib diisi.");
-            return;
-        }
-        const id = "SJB-" + String(Date.now()).slice(-4);
-        onSave({ ...form, id });
-        onClose();
-    };
-
-    const field = (label: string, child: React.ReactNode) => (
-        <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: DK, marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</label>
-            {child}
-        </div>
-    );
-
-    const inputStyle: React.CSSProperties = { width: "100%", padding: "9px 13px", borderRadius: 9, border: "1.5px solid #d0ead9", fontSize: 13, fontFamily: "'Poppins', sans-serif", outline: "none", boxSizing: "border-box" };
-
-    return (
-        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(27,67,50,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-            <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "28px 32px", width: 520, maxWidth: "92vw", boxShadow: "0 24px 64px rgba(27,67,50,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: 0 }}>➕ Tambah Pesanan</h3>
-                    <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9ca3af" }}>✕</button>
-                </div>
-
-                {error && <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12, color: "#dc2626", fontWeight: 600 }}>{error}</div>}
-
-                {field("Nama Pelanggan", <input style={inputStyle} value={form.pelanggan} onChange={e => setForm(f => ({ ...f, pelanggan: e.target.value }))} placeholder="" />)}
-                {field("Produk", <input style={inputStyle} value={form.produk} onChange={e => setForm(f => ({ ...f, produk: e.target.value }))} placeholder="" />)}
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
-                    {field("Qty", <input style={inputStyle} value={form.qty} onChange={e => setForm(f => ({ ...f, qty: +e.target.value || 0 }))} placeholder="Contoh: 2" />)}
-                    {field("Total (Rp)", <input style={inputStyle} value={form.total} onChange={e => setForm(f => ({ ...f, total: +e.target.value.replace(/\D/g, "") || 0 }))} placeholder="Contoh: 45000" />)}
-                </div>
-
-                {field("Status",
-                    <select style={{ ...inputStyle, background: "#fff" }} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as StatusPesanan }))}>
-                        <option value="Diproses">Diproses</option>
-                        <option value="Dikirim">Dikirim</option>
-                        <option value="Selesai">Selesai</option>
-                    </select>
-                )}
-                {field("Tanggal", <input style={inputStyle} value={form.tanggal} onChange={e => setForm(f => ({ ...f, tanggal: e.target.value }))} placeholder="" />)}
-
-                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
-                    <button onClick={onClose} style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid #d0ead9", background: "#fff", color: "#4b7a5f", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Batal</button>
-                    <button onClick={handleSave} style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: P, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(82,183,136,0.3)" }}>Simpan</button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 /* ── Detail Modal ── */
+/* ── Detail Modal ── */
 function DetailModal({ pesanan, onClose }: { pesanan: Pesanan; onClose: () => void }) {
-    const s = STATUS_STYLE[pesanan.status];
+    const subTotal = pesanan.total;
+    const grandTotal = subTotal + pesanan.ongkir;
+
+    const RowInfo = ({ label, value }: { label: string; value: React.ReactNode }) => (
+        <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
+            <span style={{ fontSize: 13, color: "#6b7280", width: 140, flexShrink: 0 }}>{label}</span>
+            <span style={{ fontSize: 13, color: "#111827", fontWeight: 500, lineHeight: 1.4 }}>{value}</span>
+        </div>
+    );
+
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(27,67,50,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-            <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "30px 36px", width: 480, maxWidth: "92vw", boxShadow: "0 24px 64px rgba(27,67,50,0.2)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: 0 }}>🛒 Detail Pesanan</h3>
-                    <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9ca3af" }}>✕</button>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
+            <div style={{ position: "relative", background: "#fff", borderRadius: 16, width: 460, maxWidth: "94vw", boxShadow: "0 24px 64px rgba(0,0,0,0.15)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto", padding: "30px 26px" }}>
+
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 24px 0", fontFamily: "'Poppins', sans-serif" }}>
+                    Detail Pesanan #{pesanan.id}
+                </h2>
+
+                {/* Section 1: Informasi Pesanan */}
+                <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
+                    <RowInfo label="Pelanggan" value={pesanan.pelanggan} />
+                    <RowInfo label="No. HP" value={pesanan.noTelepon} />
+                    <RowInfo label="Alamat" value={pesanan.alamat || "-"} />
+                    <RowInfo label="Tanggal Pesan" value={pesanan.tanggal} />
                 </div>
 
-                {/* ID + status */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <span style={{ fontSize: 20, fontWeight: 800, color: DK, fontFamily: "'Poppins', sans-serif" }}>#{pesanan.id}</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: s.bg, color: s.color }}>
-                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: s.dot, flexShrink: 0 }} />
-                        {pesanan.status}
-                    </span>
-                </div>
+                {/* Section 2: Rincian Pesanan */}
+                <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px", marginBottom: 8 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Rincian Pesanan</h3>
 
-                {/* Info rows */}
-                {[
-                    { label: "Pelanggan", value: pesanan.pelanggan },
-                    { label: "Produk", value: pesanan.produk },
-                    { label: "Jumlah", value: `${pesanan.qty} pcs` },
-                    { label: "Total", value: formatRp(pesanan.total) },
-                    { label: "Tanggal", value: pesanan.tanggal },
-                ].map(row => (
-                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${BORDER}` }}>
-                        <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{row.label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: DK }}>{row.value}</span>
+                    {/* Item */}
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{pesanan.produk}</div>
+                            <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{pesanan.qty} pcs</div>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+                            {formatRp(subTotal)}
+                        </div>
                     </div>
-                ))}
 
-                <button onClick={onClose} style={{ marginTop: 24, width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: P, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(82,183,136,0.3)" }}>Tutup</button>
+                    <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
+
+                    {/* Subtotals */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Subtotal</span>
+                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Ongkir</span>
+                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(pesanan.ongkir)}</span>
+                    </div>
+
+                    {/* Total */}
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
+                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(grandTotal)}</span>
+                    </div>
+                </div>
+
+                <button onClick={onClose} style={{ position: "absolute", top: 26, right: 26, background: "none", border: "none", fontSize: 20, color: "#9ca3af", cursor: "pointer" }}>✕</button>
+
             </div>
         </div>
     );
@@ -152,8 +126,15 @@ function DetailModal({ pesanan, onClose }: { pesanan: Pesanan; onClose: () => vo
 
 /* ── Invoice Modal ── */
 function InvoiceModal({ pesanan, onClose }: { pesanan: Pesanan; onClose: () => void }) {
-    const s = STATUS_STYLE[pesanan.status];
-    const hargaSatuan = pesanan.qty > 0 ? Math.round(pesanan.total / pesanan.qty) : 0;
+    const subTotal = pesanan.total;
+    const grandTotal = subTotal + pesanan.ongkir;
+
+    const RowInfo = ({ label, value }: { label: string; value: React.ReactNode }) => (
+        <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
+            <span style={{ fontSize: 13, color: "#6b7280", width: 140, flexShrink: 0 }}>{label}</span>
+            <span style={{ fontSize: 13, color: "#111827", fontWeight: 500, lineHeight: 1.4 }}>{value}</span>
+        </div>
+    );
 
     const handlePrint = () => {
         const el = document.getElementById("invoice-print-area");
@@ -164,114 +145,87 @@ function InvoiceModal({ pesanan, onClose }: { pesanan: Pesanan; onClose: () => v
             <!DOCTYPE html><html><head>
             <title>Invoice #${pesanan.id}</title>
             <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #1b4332; }
-                .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 3px solid #52b788; padding-bottom: 20px; }
-                .brand { font-size: 22px; font-weight: 800; color: #1b4332; }
-                .brand span { color: #52b788; }
-                .inv-title { font-size: 28px; font-weight: 800; color: #52b788; }
-                .inv-id { font-size: 13px; color: #9ca3af; margin-top: 4px; }
-                .section { margin-bottom: 24px; }
-                .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #9ca3af; margin-bottom: 8px; }
-                .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e4f2ea; font-size: 13px; }
-                .info-row span:first-child { color: #6b7280; }
-                .info-row span:last-child { font-weight: 700; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-                th { background: #1b4332; color: #fff; padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-                td { padding: 10px 14px; border-bottom: 1px solid #e4f2ea; font-size: 13px; }
-                .total-row td { font-weight: 800; font-size: 15px; background: #f0faf4; border-top: 2px solid #52b788; }
-                .status-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-                .footer { text-align: center; font-size: 11px; color: #9ca3af; margin-top: 32px; border-top: 1px solid #e4f2ea; padding-top: 16px; }
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
+                * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 40px; color: #111827; }
+                .print-container { max-width: 600px; margin: 0 auto; }
             </style></head><body>
-            ${el.innerHTML}
+            <div class="print-container">
+                ${el.innerHTML}
+            </div>
             </body></html>
         `);
         w.document.close();
         w.focus();
-        w.print();
-        w.close();
+        setTimeout(() => { w.print(); w.close(); }, 300);
     };
 
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(27,67,50,0.45)", backdropFilter: "blur(5px)" }} onClick={onClose} />
-            <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "28px 32px", width: 600, maxWidth: "95vw", boxShadow: "0 24px 80px rgba(27,67,50,0.25)", maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(5px)" }} onClick={onClose} />
+            <div style={{ position: "relative", background: "#fff", borderRadius: 16, width: 460, maxWidth: "94vw", boxShadow: "0 24px 80px rgba(0,0,0,0.25)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto", padding: "30px 26px" }}>
 
-                {/* Modal header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: 0 }}>🖨️ Cetak Invoice</h3>
-                    <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9ca3af" }}>✕</button>
-                </div>
+                {/* Wrapper untuk area cetak */}
+                <div id="invoice-print-area">
+                    <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 24px 0", fontFamily: "'Poppins', sans-serif" }}>
+                        Invoice #{pesanan.id}
+                    </h2>
 
-                {/* Invoice preview */}
-                <div id="invoice-print-area" style={{ border: "1px solid #e4f2ea", borderRadius: 14, padding: "28px 30px", background: "#fff" }}>
+                    {/* Section 1: Informasi Pesanan */}
+                    <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
+                        <RowInfo label="Pelanggan" value={pesanan.pelanggan} />
+                        <RowInfo label="No. HP" value={pesanan.noTelepon} />
+                        <RowInfo label="Alamat" value={pesanan.alamat || "-"} />
+                        <RowInfo label="Tanggal Pesan" value={pesanan.tanggal} />
+                    </div>
 
-                    {/* Header */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, paddingBottom: 18, borderBottom: "3px solid #52b788" }}>
-                        <div>
-                            <div style={{ fontSize: 20, fontWeight: 800, color: DK }}>Sejuba <span style={{ color: P }}>Drink</span></div>
-                            <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>Cold Pressed Juice & Infused Water</div>
-                            <div style={{ fontSize: 11, color: "#9ca3af" }}>sejubadrink@gmail.com</div>
+                    {/* Section 2: Rincian Pesanan */}
+                    <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px", marginBottom: 8 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Rincian Pesanan</h3>
+
+                        {/* Item */}
+                        <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{pesanan.produk}</div>
+                                <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{pesanan.qty} pcs</div>
+                            </div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+                                {formatRp(subTotal)}
+                            </div>
                         </div>
-                        <div style={{ textAlign: "right" }}>
-                            <div style={{ fontSize: 26, fontWeight: 800, color: P }}>INVOICE</div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: DK, marginTop: 2 }}>#{pesanan.id}</div>
-                            <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>Tanggal: {pesanan.tanggal}</div>
+
+                        <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
+
+                        {/* Subtotals */}
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Subtotal</span>
+                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
                         </div>
-                    </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Ongkir</span>
+                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(pesanan.ongkir)}</span>
+                        </div>
 
-                    {/* Info pelanggan */}
-                    <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#9ca3af", marginBottom: 8 }}>Kepada</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: DK }}>{pesanan.pelanggan}</div>
-                    </div>
-
-                    {/* Tabel produk */}
-                    <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 20 }}>
-                        <thead>
-                            <tr style={{ background: DK }}>
-                                {["Produk", "Qty", "Harga Satuan", "Total"].map(h => (
-                                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style={{ padding: "12px 14px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#374151" }}>{pesanan.produk}</td>
-                                <td style={{ padding: "12px 14px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK }}>{pesanan.qty}</td>
-                                <td style={{ padding: "12px 14px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#374151" }}>{formatRp(hargaSatuan)}</td>
-                                <td style={{ padding: "12px 14px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK }}>{formatRp(pesanan.total)}</td>
-                            </tr>
-                            <tr style={{ background: "#f0faf4" }}>
-                                <td colSpan={3} style={{ padding: "12px 14px", fontSize: 13, fontWeight: 700, color: DK, borderTop: "2px solid #52b788", textAlign: "right" }}>TOTAL</td>
-                                <td style={{ padding: "12px 14px", fontSize: 15, fontWeight: 800, color: DK, borderTop: "2px solid #52b788" }}>{formatRp(pesanan.total)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    {/* Status */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                        <div style={{ fontSize: 12, color: "#9ca3af" }}>Status Pesanan</div>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color }}>
-                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: s.dot }} />
-                            {pesanan.status}
-                        </span>
-                    </div>
-
-                    {/* Footer */}
-                    <div style={{ textAlign: "center", fontSize: 11, color: "#9ca3af", paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
-                        Terima kasih telah berbelanja di Sejuba Drink · Sehat dimulai dari minuman yang tepat
+                        {/* Total */}
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
+                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(grandTotal)}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Tombol */}
+                {/* Tombol Aksi */}
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-                    <button onClick={onClose} style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid #d0ead9", background: "#fff", color: "#4b7a5f", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Tutup</button>
-                    <button onClick={handlePrint} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: DK, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(27,67,50,0.25)" }}>
+                    <button onClick={onClose} style={{ padding: "10px 22px", borderRadius: 10, border: "1px solid #e5e7eb", background: "#fff", color: "#374151", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Tutup</button>
+                    <button onClick={handlePrint} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#16a34a", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(22,163,74,0.2)" }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
                         Cetak / Print
                     </button>
                 </div>
+
+                <button onClick={onClose} style={{ position: "absolute", top: 26, right: 26, background: "none", border: "none", fontSize: 20, color: "#9ca3af", cursor: "pointer" }}>✕</button>
+
             </div>
         </div>
     );
@@ -310,8 +264,9 @@ export default function PesananPage() {
     const [activeStatus, setActiveStatus] = useState<"Semua" | StatusPesanan>("Semua");
     const [detailTarget, setDetailTarget] = useState<Pesanan | null>(null);
     const [invoiceTarget, setInvoiceTarget] = useState<Pesanan | null>(null);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [showAdd, setShowAdd] = useState(false);
+
+    const updateStatus = (id: string, status: StatusPesanan) =>
+        setPesanan(ps => ps.map(p => p.id === id ? { ...p, status } : p));
 
     const filtered = useMemo(() =>
         pesanan.filter(p =>
@@ -324,48 +279,32 @@ export default function PesananPage() {
     const totalPendapatan = pesanan.reduce((s, p) => s + p.total, 0);
     const countOf = (s: StatusPesanan) => pesanan.filter(p => p.status === s).length;
 
+    const [page, setPage] = useState(1);
+    const PER_PAGE = 10;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    const safePage = Math.min(page, totalPages);
+    const paginated = useMemo(() =>
+        filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
+        [filtered, safePage]
+    );
+
     return (
         <>
-            {showAdd && <TambahModal onClose={() => setShowAdd(false)} onSave={p => setPesanan(ps => [p, ...ps])} />}
             {detailTarget && <DetailModal pesanan={detailTarget} onClose={() => setDetailTarget(null)} />}
             {invoiceTarget && <InvoiceModal pesanan={invoiceTarget} onClose={() => setInvoiceTarget(null)} />}
 
-            {/* Konfirmasi Hapus */}
-            {deleteId && (
-                <div style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ position: "absolute", inset: 0, background: "rgba(27,67,50,0.4)", backdropFilter: "blur(4px)" }} onClick={() => setDeleteId(null)} />
-                    <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "32px 36px", width: 400, maxWidth: "92vw", boxShadow: "0 24px 64px rgba(27,67,50,0.2)", textAlign: "center" }}>
-                        <div style={{ fontSize: 40, marginBottom: 12 }}>🗑️</div>
-                        <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: "0 0 8px" }}>Hapus Pesanan?</h3>
-                        <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 24px" }}>Pesanan <strong style={{ color: "#ef4444" }}>#{deleteId}</strong> akan dihapus secara permanen.</p>
-                        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                            <button onClick={() => setDeleteId(null)} style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid #d0ead9", background: "#fff", color: "#4b7a5f", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Batal</button>
-                            <button onClick={() => { setPesanan(ps => ps.filter(p => p.id !== deleteId)); setDeleteId(null); }} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "#ef4444", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(239,68,68,0.25)" }}>Ya, Hapus</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
-                <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Pesanan</h2>
-                    <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0", fontWeight: 500 }}>
-                        {pesanan.length} total pesanan &nbsp;·&nbsp; Pendapatan: <strong style={{ color: DK }}>{formatRp(totalPendapatan)}</strong>
-                    </p>
-                </div>
-                <button
-                    onClick={() => setShowAdd(true)}
-                    style={{ display: "flex", alignItems: "center", gap: 8, background: P, color: "#fff", border: "none", padding: "12px 22px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 14px rgba(82,183,136,0.35)", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#2d6a4f"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = P; e.currentTarget.style.transform = "translateY(0)"; }}
-                >+ Tambah Pesanan</button>
+            <div style={{ marginBottom: 22 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Pesanan</h2>
+                <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0", fontWeight: 500 }}>
+                    {pesanan.length} total pesanan &nbsp;·&nbsp; Pendapatan: <strong style={{ color: DK }}>{formatRp(totalPendapatan)}</strong>
+                </p>
             </div>
 
             {/* Stat cards */}
-            <div style={{ display: "flex", gap: 14, marginBottom: 20, flexWrap: "wrap" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14, marginBottom: 20 }}>
                 <StatCard icon="📋" value={pesanan.length} label="Total Pesanan" color="#52b788" />
-                <StatCard icon="⏳" value={countOf("Diproses")} label="Diproses" color="#f59e0b" />
+                <StatCard icon="📦" value={countOf("Diproses")} label="Diproses" color="#f59e0b" />
                 <StatCard icon="🚚" value={countOf("Dikirim")} label="Dikirim" color="#3b82f6" />
                 <StatCard icon="✅" value={countOf("Selesai")} label="Selesai" color="#52b788" />
             </div>
@@ -395,7 +334,7 @@ export default function PesananPage() {
                     <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 750 }}>
                         <thead>
                             <tr style={{ background: `linear-gradient(90deg, ${DK}, #2d6a4f)` }}>
-                                {["ID Pesanan", "Pelanggan", "Produk", "Qty", "Total", "Status", "Tanggal", "Aksi"].map(h => (
+                                {["ID", "Nama Pelanggan", "Nama Produk", "Total Produk", "Total Harga", "Status", "Tanggal", "Invoice", "Aksi"].map(h => (
                                     <th key={h} style={{ padding: "13px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{h}</th>
                                 ))}
                             </tr>
@@ -407,8 +346,7 @@ export default function PesananPage() {
                                         📦 Tidak ada pesanan ditemukan
                                     </td>
                                 </tr>
-                            ) : filtered.map((p, idx) => {
-                                const s = STATUS_STYLE[p.status];
+                            ) : paginated.map((p, idx) => {
                                 const ac = avatarColor(p.pelanggan);
                                 const ini = p.pelanggan.charAt(0).toUpperCase();
                                 return (
@@ -422,7 +360,7 @@ export default function PesananPage() {
                                             <span style={{ fontSize: 12, fontWeight: 700, color: DK, fontFamily: "'Poppins', sans-serif" }}>#{p.id}</span>
                                         </td>
 
-                                        {/* Pelanggan */}
+                                        {/* Nama Pelanggan */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: ac, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{ini}</div>
@@ -430,57 +368,56 @@ export default function PesananPage() {
                                             </div>
                                         </td>
 
-                                        {/* Produk */}
+                                        {/* Nama Produk */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>{p.produk}</td>
 
-                                        {/* Qty */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, textAlign: "center" }}>{p.qty}</td>
+                                        {/* Total Produk (qty) */}
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, textAlign: "center" }}>{p.qty} pcs</td>
 
-                                        {/* Total */}
+                                        {/* Total Harga */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, whiteSpace: "nowrap" }}>{formatRp(p.total)}</td>
 
                                         {/* Status */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
-                                            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color, whiteSpace: "nowrap" }}>
-                                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: s.dot, flexShrink: 0 }} />
-                                                {p.status}
-                                            </span>
+                                        <td style={{ padding: "10px 16px", borderBottom: `1px solid ${BORDER}` }}>
+                                            <select
+                                                value={p.status}
+                                                onChange={e => updateStatus(p.id, e.target.value as StatusPesanan)}
+                                                style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: `1.5px solid ${STATUS_STYLE[p.status].dot}`, background: STATUS_STYLE[p.status].bg, color: STATUS_STYLE[p.status].color, cursor: "pointer", outline: "none", fontFamily: "'Poppins', sans-serif", appearance: "auto" }}
+                                            >
+                                                <option value="Diproses">Diproses</option>
+                                                <option value="Dikirim">Dikirim</option>
+                                                <option value="Selesai">Selesai</option>
+                                            </select>
                                         </td>
+
 
                                         {/* Tanggal */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 12, color: "#9ca3af", whiteSpace: "nowrap" }}>{p.tanggal}</td>
 
+                                        {/* Invoice */}
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
+                                            <button
+                                                onClick={() => setInvoiceTarget(p)}
+                                                style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: "1.5px solid #d0ead9", background: "#f0faf4", color: DK, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Poppins', sans-serif", transition: "all 0.2s", whiteSpace: "nowrap" }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = DK; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = DK; }}
+                                                onMouseLeave={e => { e.currentTarget.style.background = "#f0faf4"; e.currentTarget.style.color = DK; e.currentTarget.style.borderColor = "#d0ead9"; }}
+                                            >
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                                                Invoice
+                                            </button>
+                                        </td>
+
                                         {/* Aksi */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
-                                            <div style={{ display: "flex", gap: 6 }}>
-                                                <button
-                                                    onClick={() => setDetailTarget(p)}
-                                                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: "1.5px solid #e4f2ea", background: "#f9fdfa", color: "#4b7a5f", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Poppins', sans-serif", transition: "all 0.2s", whiteSpace: "nowrap" }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = P; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = P; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = "#f9fdfa"; e.currentTarget.style.color = "#4b7a5f"; e.currentTarget.style.borderColor = "#e4f2ea"; }}
-                                                >
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                                    Detail
-                                                </button>
-                                                <button
-                                                    onClick={() => setInvoiceTarget(p)}
-                                                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: "1.5px solid #d0ead9", background: "#f0faf4", color: DK, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Poppins', sans-serif", transition: "all 0.2s", whiteSpace: "nowrap" }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = DK; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = DK; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = "#f0faf4"; e.currentTarget.style.color = DK; e.currentTarget.style.borderColor = "#d0ead9"; }}
-                                                >
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
-                                                    Invoice
-                                                </button>
-                                                <button
-                                                    onClick={() => setDeleteId(p.id)}
-                                                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", color: "#ef4444", cursor: "pointer", transition: "all 0.2s", flexShrink: 0 }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; e.currentTarget.style.color = "#ef4444"; }}
-                                                    title="Hapus"
-                                                >
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" /></svg>
-                                                </button>
-                                            </div>
+                                            <button
+                                                onClick={() => setDetailTarget(p)}
+                                                style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: "1.5px solid #e4f2ea", background: "#f9fdfa", color: "#4b7a5f", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Poppins', sans-serif", transition: "all 0.2s", whiteSpace: "nowrap" }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = P; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = P; }}
+                                                onMouseLeave={e => { e.currentTarget.style.background = "#f9fdfa"; e.currentTarget.style.color = "#4b7a5f"; e.currentTarget.style.borderColor = "#e4f2ea"; }}
+                                            >
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                                                Detail
+                                            </button>
                                         </td>
                                     </tr>
                                 );
@@ -491,12 +428,25 @@ export default function PesananPage() {
 
                 {/* Footer */}
                 <div style={{ padding: "13px 18px", borderTop: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9fdfa", flexWrap: "wrap", gap: 8 }}>
-                    <span style={{ fontSize: 12, color: "#9ca3af" }}>Menampilkan {filtered.length} dari {pesanan.length} pesanan</span>
-                    <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#b45309" }}>● {countOf("Diproses")} Diproses</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1d4ed8" }}>● {countOf("Dikirim")} Dikirim</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1b7a4a" }}>● {countOf("Selesai")} Selesai</span>
-                    </div>
+                    <span style={{ fontSize: 12, color: "#9ca3af" }}>Menampilkan {paginated.length} dari {filtered.length} pesanan</span>
+                    {totalPages > 1 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
+                                style={{ padding: "5px 12px", borderRadius: 8, border: "1.5px solid #e4f2ea", background: safePage === 1 ? "#f9fdfa" : "#fff", color: safePage === 1 ? "#c4d9cc" : DK, fontSize: 12, fontWeight: 700, cursor: safePage === 1 ? "default" : "pointer", fontFamily: "'Poppins', sans-serif" }}>
+                                ←
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                                <button key={n} onClick={() => setPage(n)}
+                                    style={{ width: 30, height: 30, borderRadius: 8, border: `1.5px solid ${n === safePage ? P : "#e4f2ea"}`, background: n === safePage ? P : "#fff", color: n === safePage ? "#fff" : DK, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>
+                                    {n}
+                                </button>
+                            ))}
+                            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+                                style={{ padding: "5px 12px", borderRadius: 8, border: "1.5px solid #e4f2ea", background: safePage === totalPages ? "#f9fdfa" : "#fff", color: safePage === totalPages ? "#c4d9cc" : DK, fontSize: 12, fontWeight: 700, cursor: safePage === totalPages ? "default" : "pointer", fontFamily: "'Poppins', sans-serif" }}>
+                                →
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

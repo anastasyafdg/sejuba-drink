@@ -86,8 +86,7 @@ export default function PembayaranPage() {
     // ─────────────────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-white">
-            <div className="max-w-3xl mx-auto px-5 py-10 pb-20 md:pt-50">
-
+            <div className="max-w-6xl mx-auto px-6 py-16 md:pt-48">
                 {/* ════════════════════════════════════════
                     INFORMASI PEMESANAN (read-only)
                 ════════════════════════════════════════ */}

@@ -114,6 +114,22 @@ function StokBadge({ stok }: { stok: number }) {
 /* ── Modal Form ── */
 const UKURAN_LIST: Varian["ukuran"][] = ["50ml", "100ml", "250ml"];
 
+interface FormVarian {
+    ukuran: "50ml" | "100ml" | "250ml";
+    harga: number | "";
+    stok: number | "";
+}
+
+interface FormState {
+    nama: string;
+    jenis: string;
+    deskripsi: string;
+    kandungan: string;
+    status: "Tersedia" | "Habis";
+    varian: FormVarian[];
+    foto: string;
+}
+
 function ProductModal({
     open, onClose, initial, onSave,
 }: {
@@ -122,13 +138,13 @@ function ProductModal({
     initial?: Partial<Product>;
     onSave: (p: Omit<Product, "id">) => void;
 }) {
-    const [form, setForm] = useState<Omit<Product, "id">>({
+    const [form, setForm] = useState<FormState>({
         nama: initial?.nama ?? "",
         jenis: initial?.jenis ?? "Cold Pressed Juice",
         deskripsi: initial?.deskripsi ?? "",
         kandungan: initial?.kandungan ?? "",
         status: initial?.status ?? "Tersedia",
-        varian: initial?.varian ?? UKURAN_LIST.map(u => ({ ukuran: u, harga: HARGA[u], stok: 0 })),
+        varian: (initial?.varian ?? UKURAN_LIST.map(u => ({ ukuran: u, harga: HARGA[u], stok: 0 }))) as FormVarian[],
         foto: initial?.foto ?? "",
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -233,13 +249,6 @@ function ProductModal({
                             <option>Tersedia</option><option>Habis</option>
                         </select>
                     </div>
-
-                    <div style={{ gridColumn: "1/-1" }}>
-                        <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: DK, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Deskripsi Produk</label>
-                        <textarea rows={2} value={form.deskripsi} onChange={e => setForm(f => ({ ...f, deskripsi: e.target.value }))}
-                            style={{ width: "100%", padding: "9px 13px", borderRadius: 9, border: "1.5px solid #d0ead9", fontSize: 13, fontFamily: "'Poppins', sans-serif", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 14 }} />
-                    </div>
-                    <div style={{ gridColumn: "1/-1" }}>{inp("Kandungan Produk", form.kandungan, v => setForm(f => ({ ...f, kandungan: v })))}</div>
                 </div>
 
                 {/* Varian harga & stok */}
@@ -253,11 +262,17 @@ function ProductModal({
                                     <div style={{ fontSize: 13, fontWeight: 700, color: P, marginBottom: 8 }}>{ukuran}</div>
                                     <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 3 }}>Harga</div>
                                     <input type="number" value={v.harga}
-                                        onChange={e => setForm(f => ({ ...f, varian: f.varian.map(x => x.ukuran === ukuran ? { ...x, harga: +e.target.value } : x) }))}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setForm(f => ({ ...f, varian: f.varian.map(x => x.ukuran === ukuran ? { ...x, harga: val === "" ? "" : Number(val) } : x) }));
+                                        }}
                                         style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d0ead9", fontSize: 12, fontFamily: "'Poppins', sans-serif", outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
                                     <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 3 }}>Stok</div>
                                     <input type="number" value={v.stok}
-                                        onChange={e => setForm(f => ({ ...f, varian: f.varian.map(x => x.ukuran === ukuran ? { ...x, stok: +e.target.value } : x) }))}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setForm(f => ({ ...f, varian: f.varian.map(x => x.ukuran === ukuran ? { ...x, stok: val === "" ? "" : Number(val) } : x) }));
+                                        }}
                                         style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d0ead9", fontSize: 12, fontFamily: "'Poppins', sans-serif", outline: "none", boxSizing: "border-box" }} />
                                 </div>
                             );
@@ -267,7 +282,18 @@ function ProductModal({
 
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                     <button onClick={onClose} style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid #d0ead9", background: "#fff", color: "#4b7a5f", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Batal</button>
-                    <button onClick={() => { onSave(form); onClose(); }} style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: P, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(82,183,136,0.3)" }}>Simpan</button>
+                    <button onClick={() => {
+                        const normalizedVarian = form.varian.map(v => ({
+                            ...v,
+                            harga: v.harga === "" ? 0 : Number(v.harga),
+                            stok: v.stok === "" ? 0 : Number(v.stok),
+                        }));
+                        onSave({
+                            ...form,
+                            varian: normalizedVarian,
+                        });
+                        onClose();
+                    }} style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: P, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(82,183,136,0.3)" }}>Simpan</button>
                 </div>
             </div>
         </div>
@@ -316,18 +342,7 @@ function DetailDrawer({ product, onClose }: { product: Product; onClose: () => v
                     <span style={{ padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: product.status === "Tersedia" ? "rgba(82,183,136,0.1)" : "rgba(239,68,68,0.1)", color: product.status === "Tersedia" ? "#1b7a4a" : "#dc2626" }}>{product.status}</span>
                 </div>
 
-                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginBottom: 16 }}>{product.deskripsi}</p>
-
-                <div style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: DK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Kandungan</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {product.kandungan.split(", ").map(k => (
-                            <span key={k} style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, background: "rgba(82,183,136,0.08)", color: DK, fontWeight: 500 }}>{k}</span>
-                        ))}
-                    </div>
-                </div>
-
-                <div style={{ fontSize: 11, fontWeight: 700, color: DK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Varian & Harga</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: DK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10, marginTop: 24 }}>Varian & Harga</div>
                 {product.varian.map(v => (
                     <div key={v.ukuran} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderRadius: 10, background: "#f9fdfa", border: `1px solid ${BORDER}`, marginBottom: 8 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: P }}>{v.ukuran}</span>
@@ -412,14 +427,14 @@ export default function ProdukPage() {
                     <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
                         <thead>
                             <tr style={{ background: `linear-gradient(90deg, ${DK}, #2d6a4f)` }}>
-                                {["No", "Foto", "Nama Produk", "Jenis", "Kandungan", "Varian & Harga", "Stok", "Status", "Aksi"].map(h => (
+                                {["No", "Foto", "Nama Produk", "Jenis", "Varian & Harga", "Stok", "Status", "Aksi"].map(h => (
                                     <th key={h} style={{ padding: "13px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
                             {filtered.length === 0 ? (
-                                <tr><td colSpan={9} style={{ padding: 48, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>🌿 Tidak ada produk ditemukan</td></tr>
+                                <tr><td colSpan={8} style={{ padding: 48, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>🌿 Tidak ada produk ditemukan</td></tr>
                             ) : filtered.map((p, idx) => {
                                 const jc = JENIS_COLORS[p.jenis] ?? { bg: "#f3f4f6", color: "#374151" };
                                 const totalStok = p.varian.reduce((a, v) => a + v.stok, 0);
@@ -436,21 +451,16 @@ export default function ProdukPage() {
                                             {p.foto ? (
                                                 <img src={p.foto} alt={p.nama} style={{ width: 38, height: 38, borderRadius: 10, objectFit: "cover", display: "block" }} />
                                             ) : (
-                                                <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #d8f3dc, #95d5b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🌿</div>
+                                                <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #d8f3dc, #95d5b2)", display: "flex", alignItems: "center", justifyItems: "center", fontSize: 18 }}>🌿</div>
                                             )}
                                         </td>
-                                        {/* Nama + deskripsi */}
+                                        {/* Nama Produk */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, minWidth: 160 }}>
                                             <div style={{ fontSize: 13, fontWeight: 700, color: DK }}>{p.nama}</div>
-                                            <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.deskripsi}</div>
                                         </td>
                                         {/* Jenis */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: jc.bg, color: jc.color, whiteSpace: "nowrap" }}>{p.jenis}</span>
-                                        </td>
-                                        {/* Kandungan */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, maxWidth: 180 }}>
-                                            <div style={{ fontSize: 11, color: "#6b7280", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{p.kandungan}</div>
                                         </td>
                                         {/* Varian & harga */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>

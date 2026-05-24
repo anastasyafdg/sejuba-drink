@@ -209,13 +209,6 @@ export default function DashboardPage() {
                             }}>
                                 {stat.icon}
                             </div>
-                            <div style={{
-                                padding: "4px 10px", borderRadius: 20,
-                                background: "rgba(82,183,136,0.09)",
-                                fontSize: 11, fontWeight: 600, color: "#1b7a4a",
-                            }}>
-                                ↑ {stat.change}
-                            </div>
                         </div>
                         <div style={{ fontSize: 28, fontWeight: 800, color: "#1b4332", lineHeight: 1.1, marginBottom: 4, letterSpacing: "-0.03em" }}>
                             {(stat as any).prefix && <span style={{ fontSize: 15, fontWeight: 600, marginRight: 2 }}>{(stat as any).prefix}</span>}

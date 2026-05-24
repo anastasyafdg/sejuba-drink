@@ -80,73 +80,7 @@ function DetailModal({ pelanggan, onClose }: { pelanggan: Pelanggan; onClose: ()
     );
 }
 
-/* ── Delete Confirm Modal ── */
-function DeleteConfirm({ nama, onConfirm, onCancel }: { nama: string; onConfirm: () => void; onCancel: () => void }) {
-    return (
-        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(27,67,50,0.35)", backdropFilter: "blur(4px)" }} onClick={onCancel} />
-            <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "32px 36px", width: 400, maxWidth: "92vw", boxShadow: "0 24px 64px rgba(27,67,50,0.2)", textAlign: "center" }}>
-                <div style={{ fontSize: 42, marginBottom: 12 }}>🗑️</div>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: "0 0 8px" }}>Hapus Pelanggan?</h3>
-                <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 24px" }}>
-                    <strong style={{ color: "#ef4444" }}>{nama}</strong> akan dihapus secara permanen.
-                </p>
-                <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                    <button onClick={onCancel} style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid #d0ead9", background: "#fff", color: "#4b7a5f", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Batal</button>
-                    <button onClick={onConfirm} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "#ef4444", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(239,68,68,0.25)" }}>Ya, Hapus</button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
-/* ── Tambah Pelanggan Modal ── */
-function TambahPelangganModal({ onClose, onSave }: { onClose: () => void; onSave: (p: Pelanggan) => void }) {
-    const [form, setForm] = useState({ nama: "", telepon: "", email: "", alamat: "" });
-    const [error, setError] = useState("");
-
-    const handleSave = () => {
-        if (!form.nama.trim() || !form.telepon.trim()) {
-            setError("Nama dan nomor telepon wajib diisi.");
-            return;
-        }
-        const id = "PLG-" + String(Date.now()).slice(-4);
-        onSave({ ...form, id });
-        onClose();
-    };
-
-    const inputStyle: React.CSSProperties = { width: "100%", padding: "9px 13px", borderRadius: 9, border: "1.5px solid #d0ead9", fontSize: 13, fontFamily: "'Poppins', sans-serif", outline: "none", boxSizing: "border-box" };
-    const field = (label: string, child: React.ReactNode) => (
-        <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: DK, marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</label>
-            {child}
-        </div>
-    );
-
-    return (
-        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(27,67,50,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-            <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "28px 32px", width: 500, maxWidth: "92vw", boxShadow: "0 24px 64px rgba(27,67,50,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: DK, margin: 0 }}>➕ Tambah Pelanggan</h3>
-                    <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9ca3af" }}>✕</button>
-                </div>
-
-                {error && <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12, color: "#dc2626", fontWeight: 600 }}>{error}</div>}
-
-                {field("Nama Lengkap", <input style={inputStyle} value={form.nama} onChange={e => setForm(f => ({ ...f, nama: e.target.value }))} placeholder="" />)}
-                {field("No. Telepon", <input style={inputStyle} value={form.telepon} onChange={e => setForm(f => ({ ...f, telepon: e.target.value }))} placeholder="" />)}
-                {field("Email", <input style={inputStyle} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="" />)}
-                {field("Alamat", <textarea style={{ ...inputStyle, resize: "vertical", minHeight: 72 }} value={form.alamat} onChange={e => setForm(f => ({ ...f, alamat: e.target.value }))} placeholder="" />)}
-
-                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
-                    <button onClick={onClose} style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid #d0ead9", background: "#fff", color: "#4b7a5f", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif" }}>Batal</button>
-                    <button onClick={handleSave} style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: P, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 12px rgba(82,183,136,0.3)" }}>Simpan</button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 /* ── Stat Card ── */
 function StatCard({ icon, value, label, color }: { icon: string; value: number; label: string; color: string }) {
@@ -178,11 +112,9 @@ function ActionBtn({ color, onClick, title, children }: { color: string; onClick
 
 /* ── Main Page ── */
 export default function PelangganPage() {
-    const [pelanggan, setPelanggan] = useState<Pelanggan[]>(INITIAL_PELANGGAN);
+    const pelanggan = INITIAL_PELANGGAN;
     const [search, setSearch] = useState("");
     const [detailTarget, setDetailTarget] = useState<Pelanggan | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<Pelanggan | null>(null);
-    const [showAdd, setShowAdd] = useState(false);
 
     const filtered = useMemo(() =>
         pelanggan.filter(p =>
@@ -194,30 +126,14 @@ export default function PelangganPage() {
 
     return (
         <>
-            {showAdd && <TambahPelangganModal onClose={() => setShowAdd(false)} onSave={p => setPelanggan(ps => [p, ...ps])} />}
             {detailTarget && <DetailModal pelanggan={detailTarget} onClose={() => setDetailTarget(null)} />}
-            {deleteTarget && (
-                <DeleteConfirm
-                    nama={deleteTarget.nama}
-                    onConfirm={() => { setPelanggan(ps => ps.filter(p => p.id !== deleteTarget.id)); setDeleteTarget(null); }}
-                    onCancel={() => setDeleteTarget(null)}
-                />
-            )}
 
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
-                <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Pelanggan</h2>
-                    <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0", fontWeight: 500 }}>
-                        {pelanggan.length} pelanggan terdaftar
-                    </p>
-                </div>
-                <button
-                    onClick={() => setShowAdd(true)}
-                    style={{ display: "flex", alignItems: "center", gap: 8, background: P, color: "#fff", border: "none", padding: "12px 22px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Poppins', sans-serif", boxShadow: "0 4px 14px rgba(82,183,136,0.35)", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#2d6a4f"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = P; e.currentTarget.style.transform = "translateY(0)"; }}
-                >+ Tambah Pelanggan</button>
+            <div style={{ marginBottom: 22 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Pelanggan</h2>
+                <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0", fontWeight: 500 }}>
+                    {pelanggan.length} pelanggan terdaftar
+                </p>
             </div>
 
             {/* Stat Cards */}
@@ -245,7 +161,7 @@ export default function PelangganPage() {
                     <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 750 }}>
                         <thead>
                             <tr style={{ background: `linear-gradient(90deg, ${DK}, #2d6a4f)` }}>
-                                {["ID", "Nama Pelanggan", "No. Telepon", "Email", "Alamat", "Aksi"].map(h => (
+                                {["ID", "Nama Pelanggan", "No. Telepon", "Email", "Alamat", "Detail"].map(h => (
                                     <th key={h} style={{ padding: "13px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{h}</th>
                                 ))}
                             </tr>
@@ -292,14 +208,9 @@ export default function PelangganPage() {
                                             </div>
                                         </td>
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
-                                            <div style={{ display: "flex", gap: 6 }}>
-                                                <ActionBtn color="#3b82f6" onClick={() => setDetailTarget(p)} title="Detail">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                                </ActionBtn>
-                                                <ActionBtn color="#ef4444" onClick={() => setDeleteTarget(p)} title="Hapus">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" /></svg>
-                                                </ActionBtn>
-                                            </div>
+                                            <ActionBtn color="#3b82f6" onClick={() => setDetailTarget(p)} title="Detail">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                                            </ActionBtn>
                                         </td>
                                     </tr>
                                 );
