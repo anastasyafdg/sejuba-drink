@@ -13,6 +13,11 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    // Menunjuk ke tabel pembeli karena tabel users telah diganti.
+    // File ini dipertahankan agar kompatibel dengan UserFactory dan tooling Laravel.
+    protected $table = 'pembeli';
+    protected $primaryKey = 'id_pembeli';
+
     /**
      * The attributes that are mass assignable.
      *
