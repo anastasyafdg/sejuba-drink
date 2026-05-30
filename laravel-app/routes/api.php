@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PenjualAuthController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PesananController; 
 
 Route::post('/penjual/login', [PenjualAuthController::class , 'loginApi']);
 
@@ -11,3 +12,5 @@ Route::post('/products', [ProductController::class, 'store']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::put('/products/{id}', [ProductController::class, 'update']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+Route::get('/pesanan', [PesananController::class, 'index']);
