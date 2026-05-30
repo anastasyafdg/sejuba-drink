@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export default function FooterPembeli() {
   const pathname = usePathname();
-  if (pathname === "/pembeli/login") return null;
+  if (pathname === "/pembeli/login" || pathname === "/pembeli/register") return null;
 
   return (
     <footer className="rounded-t-[40px] bg-[#6BA043] px-8 py-12 text-white md:px-14">

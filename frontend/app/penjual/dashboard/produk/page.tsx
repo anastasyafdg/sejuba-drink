@@ -600,15 +600,33 @@ function ProductModal({
                         marginTop: 0,
                         marginBottom: 24,
                         color: DK,
+                        fontSize: 20,
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
                     }}
                 >
-                    {initial
-                        ? "✏️ Edit Produk"
-                        : "➕ Tambah Produk"}
+                    <span style={{ color: "#7c3aed", fontSize: 22 }}>✦</span>
+                    {initial ? "Edit Produk" : "Tambah Produk"}
                 </h2>
 
                 {/* IMAGE */}
                 <div style={{ marginBottom: 20 }}>
+
+                    <label
+                        style={{
+                            display: "block",
+                            marginBottom: 8,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: DK,
+                            letterSpacing: 0.8,
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        Foto Produk
+                    </label>
 
                     <div
                         onClick={() =>
@@ -650,14 +668,19 @@ function ProductModal({
                             >
                                 <div
                                     style={{
-                                        fontSize: 40,
-                                        marginBottom: 6,
+                                        fontSize: 36,
+                                        marginBottom: 8,
                                     }}
                                 >
                                     📷
                                 </div>
 
-                                Upload Foto Produk
+                                <div style={{ fontWeight: 600, fontSize: 13, color: P }}>
+                                    Klik untuk upload foto
+                                </div>
+                                <div style={{ fontSize: 11, color: "#95d5b2", marginTop: 4 }}>
+                                    PNG, JPG, WEBP maks. 5MB
+                                </div>
                             </div>
                         )}
                     </div>
@@ -678,9 +701,11 @@ function ProductModal({
                         style={{
                             display: "block",
                             marginBottom: 6,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: 700,
                             color: DK,
+                            letterSpacing: 0.8,
+                            textTransform: "uppercase",
                         }}
                     >
                         Nama Produk
@@ -698,120 +723,182 @@ function ProductModal({
                     />
                 </div>
 
-                {/* CATEGORY */}
-                <div style={{ marginBottom: 16 }}>
+                {/* CATEGORY + STATUS */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
 
-                    <label
-                        style={{
-                            display: "block",
-                            marginBottom: 6,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: DK,
-                        }}
-                    >
-                        Kategori
-                    </label>
+                    <div>
+                        <label
+                            style={{
+                                display: "block",
+                                marginBottom: 6,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: DK,
+                                letterSpacing: 0.8,
+                                textTransform: "uppercase",
+                            }}
+                        >
+                            Jenis Produk
+                        </label>
 
-                    <select
-                        value={form.category}
-                        onChange={(e) =>
-                            setForm({
-                                ...form,
-                                category: e.target.value,
-                            })
-                        }
-                        style={inputStyle}
-                    >
+                        <select
+                            value={form.category}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    category: e.target.value,
+                                })
+                            }
+                            style={inputStyle}
+                        >
+                            <option>Cold Pressed Juice</option>
+                            <option>Infused Water Drink</option>
+                        </select>
+                    </div>
 
-                        <option>
-                            Cold Pressed Juice
-                        </option>
+                    <div>
+                        <label
+                            style={{
+                                display: "block",
+                                marginBottom: 6,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: DK,
+                                letterSpacing: 0.8,
+                                textTransform: "uppercase",
+                            }}
+                        >
+                            Status
+                        </label>
 
-                        <option>
-                            Infused Water Drink
-                        </option>
+                        <select
+                            value={form.status}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    status: e.target.value as "Tersedia" | "Habis",
+                                })
+                            }
+                            style={inputStyle}
+                        >
+                            <option value="Tersedia">Tersedia</option>
+                            <option value="Habis">Habis</option>
+                        </select>
+                    </div>
 
-                    </select>
                 </div>
 
                 {/* VARIANTS */}
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                            "repeat(3, 1fr)",
-                        gap: 12,
-                        marginBottom: 20,
-                    }}
-                >
+                <div style={{ marginBottom: 4 }}>
+                    <label
+                        style={{
+                            display: "block",
+                            marginBottom: 10,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: DK,
+                            letterSpacing: 0.8,
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        Varian &amp; Stok
+                    </label>
 
-                    {[
-                        ["50", "50 ml"],
-                        ["100", "100 ml"],
-                        ["250", "250 ml"],
-                    ].map(([size, label]) => (
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, 1fr)",
+                            gap: 12,
+                            marginBottom: 20,
+                        }}
+                    >
 
-                        <div
-                            key={size}
-                            style={{
-                                background: "#f9fdfa",
-                                padding: 14,
-                                borderRadius: 14,
-                                border: `1px solid ${BORDER}`,
-                            }}
-                        >
+                        {[
+                            ["50", "50ml"],
+                            ["100", "100ml"],
+                            ["250", "250ml"],
+                        ].map(([size, label]) => (
 
                             <div
+                                key={size}
                                 style={{
-                                    fontWeight: 700,
-                                    color: P,
-                                    marginBottom: 10,
+                                    background: "#f9fdfa",
+                                    padding: 14,
+                                    borderRadius: 14,
+                                    border: `1px solid ${BORDER}`,
                                 }}
                             >
-                                {label}
+
+                                <div
+                                    style={{
+                                        fontWeight: 700,
+                                        color: P,
+                                        marginBottom: 10,
+                                        fontSize: 15,
+                                    }}
+                                >
+                                    {label}
+                                </div>
+
+                                <label
+                                    style={{
+                                        display: "block",
+                                        fontSize: 11,
+                                        color: "#9dbfab",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    Harga
+                                </label>
+                                <input
+                                    type="number"
+                                    value={
+                                        form[
+                                        `price_${size}` as keyof typeof form
+                                        ] as number
+                                    }
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            [`price_${size}`]:
+                                                Number(e.target.value),
+                                        })
+                                    }
+                                    style={{
+                                        ...inputStyle,
+                                        marginBottom: 10,
+                                    }}
+                                />
+
+                                <label
+                                    style={{
+                                        display: "block",
+                                        fontSize: 11,
+                                        color: "#9dbfab",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    Stok
+                                </label>
+                                <input
+                                    type="number"
+                                    value={
+                                        form[
+                                        `stock_${size}` as keyof typeof form
+                                        ] as number
+                                    }
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            [`stock_${size}`]:
+                                                Number(e.target.value),
+                                        })
+                                    }
+                                    style={inputStyle}
+                                />
                             </div>
-
-                            <input
-                                type="number"
-                                placeholder="Harga"
-                                value={
-                                    form[
-                                    `price_${size}` as keyof typeof form
-                                    ] as number
-                                }
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        [`price_${size}`]:
-                                            Number(e.target.value),
-                                    })
-                                }
-                                style={{
-                                    ...inputStyle,
-                                    marginBottom: 10,
-                                }}
-                            />
-
-                            <input
-                                type="number"
-                                placeholder="Stok"
-                                value={
-                                    form[
-                                    `stock_${size}` as keyof typeof form
-                                    ] as number
-                                }
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        [`stock_${size}`]:
-                                            Number(e.target.value),
-                                    })
-                                }
-                                style={inputStyle}
-                            />
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* BUTTONS */}

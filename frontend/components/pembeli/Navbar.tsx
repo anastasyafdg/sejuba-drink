@@ -15,7 +15,7 @@ const navItems = [
 export default function NavbarPembeli() {
   const pathname = usePathname();
   const isProdukPage = pathname === "/pembeli/produk";
-  const isLoginPage = pathname === "/pembeli/login";
+  const isLoginPage = pathname === "/pembeli/login" || pathname === "/pembeli/register";
 
   const [search, setSearch] = useState("");
   

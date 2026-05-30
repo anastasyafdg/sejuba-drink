@@ -9,10 +9,47 @@ export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        router.push("/pembeli");
+        setError("");
+
+        if (!email || !password) {
+            setError("Email dan password wajib diisi.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/pembeli/login`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({ email, password }),
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                setError(data.message || "Login gagal. Coba lagi.");
+                return;
+            }
+
+            localStorage.setItem("pembeli", JSON.stringify(data.data));
+            router.push("/pembeli");
+
+        } catch {
+            setError("Tidak dapat terhubung ke server. Pastikan backend berjalan.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -57,6 +94,13 @@ export default function LoginPage() {
                     {/* CARD */}
                     <div className="bg-[#E9EFE8] rounded-[32px] p-8 shadow-[0_10px_30px_rgba(0,0,0,0.1)] backdrop-blur-sm">
 
+                        {/* ERROR MESSAGE */}
+                        {error && (
+                            <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+                                {error}
+                            </div>
+                        )}
+
                         <form onSubmit={handleLogin} className="space-y-5">
 
                             {/* EMAIL */}
@@ -93,11 +137,23 @@ export default function LoginPage() {
                             <div className="flex justify-center pt-6">
                                 <button
                                     type="submit"
-                                    className="bg-[#F25C22] hover:bg-[#d94a15] hover:scale-105 transition-all duration-200 text-white font-bold py-2.5 px-10 rounded-full shadow-md"
+                                    disabled={loading}
+                                    className="bg-[#F25C22] hover:bg-[#d94a15] hover:scale-105 transition-all duration-200 text-white font-bold py-2.5 px-10 rounded-full shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
                                 >
-                                    LOGIN
+                                    {loading ? "Memproses..." : "LOGIN"}
                                 </button>
                             </div>
+
+                            {/* LINK KE REGISTER */}
+                            <p className="text-center text-sm text-gray-500 pt-3">
+                                Belum punya akun?{" "}
+                                <Link
+                                    href="/pembeli/register"
+                                    className="text-[#F25C22] font-semibold hover:underline"
+                                >
+                                    Daftar
+                                </Link>
+                            </p>
 
                         </form>
                     </div>
