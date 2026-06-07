@@ -43,7 +43,8 @@ export default function LoginPage() {
             }
 
             localStorage.setItem("pembeli", JSON.stringify(data.data));
-            router.push("/pembeli");
+
+            window.location.href = "/pembeli";
 
         } catch {
             setError("Tidak dapat terhubung ke server. Pastikan backend berjalan.");

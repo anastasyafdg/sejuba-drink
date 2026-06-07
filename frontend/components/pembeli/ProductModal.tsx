@@ -101,7 +101,12 @@ export default function ProductModal({ product, onClose, onAdd }: any) {
               {/* BUTTON */}
               <button
                 onClick={() => {
-                  onAdd({ ...product, ...size, qty });
+                  onAdd({
+                    ...product,
+                    size: size.label,
+                    price: size.price,
+                    qty,
+                  });
                   onClose();
                 }}
                 className="ml-4 flex items-center gap-2 border border-orange-500 text-orange-500 px-5 py-2 rounded-lg hover:bg-orange-50 transition"

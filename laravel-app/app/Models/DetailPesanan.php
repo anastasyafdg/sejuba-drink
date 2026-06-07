@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Product; 
 
 class DetailPesanan extends Model
 {
@@ -28,4 +29,13 @@ class DetailPesanan extends Model
             'id_pesanan'
         );
     }
+
+    public function produk()
+{
+    return $this->belongsTo(
+        Product::class,
+        'id_produk',
+        'id'
+    );
+} 
 }

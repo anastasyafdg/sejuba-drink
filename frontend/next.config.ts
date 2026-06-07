@@ -1,8 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Leaflet perlu ditranspile agar tidak error di Next.js SSR
   transpilePackages: ["leaflet"],
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8000",
+        pathname: "/storage/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

@@ -18,9 +18,9 @@ export default function NavbarPembeli() {
   const isLoginPage = pathname === "/pembeli/login" || pathname === "/pembeli/register";
 
   const [search, setSearch] = useState("");
-  
+
   // Mock login state for demonstration
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +35,14 @@ export default function NavbarPembeli() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const pembeli = localStorage.getItem("pembeli");
+
+    if (pembeli) {
+      setIsLoggedIn(true);
+    }
   }, []);
 
   if (isLoginPage) return null;
@@ -124,8 +132,11 @@ export default function NavbarPembeli() {
                   <div className="border-t border-gray-200 my-1"></div>
                   <button
                     onClick={() => {
+                      localStorage.removeItem("pembeli");
                       setIsLoggedIn(false);
                       setIsDropdownOpen(false);
+
+                      window.location.href = "/pembeli";
                     }}
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >

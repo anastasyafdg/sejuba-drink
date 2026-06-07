@@ -22,3 +22,7 @@ Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
 // ================= PESANAN =================
 Route::get('/pesanan', [PesananController::class, 'index']);
+Route::post('/pesanan', [PesananController::class, 'store']);
+Route::put('/pesanan/{id}/bayar', [PesananController::class, 'bayar']);
+Route::get('/pesanan/{id}', [PesananController::class, 'show']);
+Route::get('/pembeli/{id}/pesanan', [PesananController::class, 'riwayatPembeli']);

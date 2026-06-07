@@ -28,4 +28,19 @@ class Pesanan extends Model
             'id_pesanan'
         );
     }
+
+    public function bayar($id)
+{
+    $pesanan = Pesanan::findOrFail($id);
+
+    $pesanan->update([
+        'status_pembayaran' => 'Berhasil',
+        'status_pesanan' => 'Diproses'
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Pembayaran berhasil'
+    ]);
+}
 }

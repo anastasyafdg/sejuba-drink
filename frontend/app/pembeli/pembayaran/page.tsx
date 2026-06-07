@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CartItem {
@@ -66,13 +67,40 @@ export default function PembayaranPage() {
         a.click();
     };
 
-    const handleSelesai = () => {
-        // Bersihkan session lalu arahkan ke halaman pesanan selesai
+    const handleSelesai = async () => {
         try {
-            sessionStorage.removeItem("sejuba_order");
+            const idPesanan = sessionStorage.getItem("id_pesanan");
+
+            if (!idPesanan) {
+                toast.error("ID Pesanan tidak ditemukan");
+                return;
+            }
+
+            const response = await fetch(
+                `http://127.0.0.1:8000/api/pesanan/${idPesanan}/bayar`,
+                {
+                    method: "PUT",
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            toast.success("Pembayaran berhasil!");
+
             sessionStorage.removeItem("sejuba_cart");
-        } catch { }
-        router.push("/pembeli/pesanan_selesai");
+
+            setTimeout(() => {
+                router.push("/pembeli/status_pesanan");
+            }, 1500);
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Gagal memproses pembayaran");
+        }
     };
 
     if (!order) return null;
@@ -86,7 +114,7 @@ export default function PembayaranPage() {
     // ─────────────────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-white">
-            <div className="max-w-6xl mx-auto px-6 py-16 md:pt-48">
+            <div className="max-w-3xl mx-auto px-5 pt-48 pb-20">
                 {/* ════════════════════════════════════════
                     INFORMASI PEMESANAN (read-only)
                 ════════════════════════════════════════ */}
@@ -179,10 +207,10 @@ export default function PembayaranPage() {
                 {/* ════════════════════════════════════════
                     RINGKASAN + METODE PEMBAYARAN (QRIS)
                 ════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 items-start">
 
                     {/* ── Ringkasan Belanja ── */}
-                    <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+                    <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm h-fit">
                         <div className="bg-[#4F7703] px-5 py-3">
                             <h3 className="font-bold text-base text-white">Ringkasan Belanja</h3>
                         </div>
@@ -231,9 +259,13 @@ export default function PembayaranPage() {
                     {/* ── Metode Pembayaran: QRIS ── */}
                     <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                         <div className="bg-[#4F7703] px-5 py-3">
-                            <h3 className="font-bold text-base text-white">Metode Pembayaran : QRIS</h3>
+                            <h3 className="font-bold text-base text-white">
+                                Metode Pembayaran : QRIS
+                            </h3>
                         </div>
-                        <div className="bg-white px-5 py-5 flex flex-col items-center gap-4">
+
+                        <div className="bg-white px-5 py-4 flex flex-col items-center gap-3">
+
                             {/* QR Code */}
                             <div className="border border-gray-200 rounded-xl p-2 bg-white shadow-sm">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -241,8 +273,8 @@ export default function PembayaranPage() {
                                     ref={qrRef}
                                     src={qrUrl}
                                     alt="QRIS Payment Code"
-                                    width={180}
-                                    height={180}
+                                    width={135}
+                                    height={135}
                                     className="block"
                                     crossOrigin="anonymous"
                                 />
@@ -252,10 +284,11 @@ export default function PembayaranPage() {
                             <button
                                 id="btn-unduh-qr"
                                 onClick={handleUnduhQR}
-                                className="w-full bg-[#F59B22] hover:bg-[#e08c1a] text-white font-semibold text-sm py-2.5 rounded-xl transition"
+                                className="w-[220px] bg-[#F59B22] hover:bg-[#e08c1a] text-white font-semibold text-sm py-2.5 rounded-xl transition"
                             >
                                 Unduh QR Code
                             </button>
+
                         </div>
                     </div>
                 </div>
