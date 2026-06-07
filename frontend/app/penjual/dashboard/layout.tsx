@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, ReactNode } from "react";
+import { clearSession, getSession } from "@/lib/auth";
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 function HomeIcon({ active }: { active?: boolean }) {
@@ -83,16 +84,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     const [penjual, setPenjual] = useState<{ nama: string; email?: string } | null>(null);
 
     useEffect(() => {
-        const storedPenjual = localStorage.getItem("penjual");
+        const storedPenjual = getSession();
         if (!storedPenjual) {
-            router.push("/penjual/login");
+            // Fallback redirect (middleware harusnya sudah memblokir lebih awal)
+            router.replace("/penjual/login");
         } else {
-            setPenjual(JSON.parse(storedPenjual));
+            setPenjual(storedPenjual);
         }
     }, [router]);
 
     const handleLogout = () => {
-        localStorage.removeItem("penjual");
+        // Hapus localStorage + cookie sekaligus
+        clearSession();
         router.push("/penjual/login");
     };
 

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { setSession } from "@/lib/auth";
 
 export default function LoginPenjualPage() {
   const router = useRouter();
@@ -41,7 +42,8 @@ export default function LoginPenjualPage() {
         return;
       }
 
-      localStorage.setItem("penjual", JSON.stringify(data.data));
+      // Simpan session ke localStorage + cookie (agar middleware bisa cek)
+      setSession(data.data);
       router.push("/penjual/dashboard");
     } catch {
       setError("Tidak dapat terhubung ke server. Pastikan backend berjalan.");
