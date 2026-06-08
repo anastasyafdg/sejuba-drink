@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "@/components/pembeli/ProductCard";
 import ProductModal from "@/components/pembeli/ProductModal";
 import CartSidebar from "@/components/pembeli/CartSidebar";
+import LoginRequiredModal from "@/components/pembeli/LoginRequiredModal";
 
 interface Product {
   id: number;
@@ -38,6 +39,25 @@ export default function PemesananPage() {
   const [toast, setToast] = useState("");
 
   const [loading, setLoading] = useState(true);
+
+  // Auth guard modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // ================= RESTORE PENDING CART SETELAH LOGIN =================
+  useEffect(() => {
+    try {
+      const pendingCart = sessionStorage.getItem("sejuba_pending_cart");
+      if (pendingCart) {
+        const parsed = JSON.parse(pendingCart);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCart(parsed);
+          sessionStorage.removeItem("sejuba_pending_cart");
+          // Auto-buka sidebar keranjang agar user sadar cartnya ter-restore
+          setOpen(true);
+        }
+      }
+    } catch {}
+  }, []);
 
   // ================= FETCH PRODUCTS =================
   useEffect(() => {
@@ -213,6 +233,7 @@ export default function PemesananPage() {
           setOpen={setOpen}
           cart={cart}
           setCart={setCart}
+          onLoginRequired={() => setShowLoginModal(true)}
         />
 
       </section>
@@ -222,6 +243,14 @@ export default function PemesananPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-full text-sm shadow-lg z-50">
           {toast}
         </div>
+      )}
+
+      {/* ================= LOGIN REQUIRED MODAL ================= */}
+      {showLoginModal && (
+        <LoginRequiredModal
+          onClose={() => setShowLoginModal(false)}
+          fromPath="/pembeli/pemesanan"
+        />
       )}
 
       {/* ================= CARA PEMESANAN ================= */}

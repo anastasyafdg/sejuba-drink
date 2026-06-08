@@ -1,4 +1,8 @@
-// lib/auth.ts - Helper untuk mengelola session penjual di localStorage + cookie
+// lib/auth.ts - Helper untuk mengelola session penjual & pembeli
+
+// ============================================================
+//  PENJUAL SESSION
+// ============================================================
 
 export interface PenjualSession {
     id: number;
@@ -6,20 +10,16 @@ export interface PenjualSession {
     email: string;
 }
 
-// ── Cookie helpers (dibaca oleh Next.js middleware di server-side) ──────────
-
-const COOKIE_NAME = "penjual_session";
+const PENJUAL_COOKIE = "penjual_session";
 const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 jam
 
-function setCookie(value: string, maxAge: number): void {
-    document.cookie = `${COOKIE_NAME}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+function setCookie(name: string, value: string, maxAge: number): void {
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax`;
 }
 
-function deleteCookie(): void {
-    document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`;
+function deleteCookie(name: string): void {
+    document.cookie = `${name}=; path=/; max-age=0`;
 }
-
-// ── Session helpers ──────────────────────────────────────────────────────────
 
 export function getSession(): PenjualSession | null {
     if (typeof window === "undefined") return null;
@@ -33,14 +33,47 @@ export function getSession(): PenjualSession | null {
 }
 
 export function setSession(data: PenjualSession): void {
-    // Simpan ke localStorage (untuk dipakai komponen client-side)
     localStorage.setItem("penjual", JSON.stringify(data));
-
-    // Simpan ke cookie (untuk dipakai Next.js middleware server-side)
-    setCookie(JSON.stringify({ id: data.id, nama: data.nama }), COOKIE_MAX_AGE);
+    setCookie(PENJUAL_COOKIE, JSON.stringify({ id: data.id, nama: data.nama }), COOKIE_MAX_AGE);
 }
 
 export function clearSession(): void {
     localStorage.removeItem("penjual");
-    deleteCookie();
+    deleteCookie(PENJUAL_COOKIE);
+}
+
+// ============================================================
+//  PEMBELI SESSION
+// ============================================================
+
+export interface PembeliSession {
+    id_pembeli: number;
+    nama_pembeli: string;
+    email: string;
+    no_telepon: string;
+}
+
+const PEMBELI_COOKIE = "pembeli_session";
+
+export function getPembeliSession(): PembeliSession | null {
+    if (typeof window === "undefined") return null;
+    const stored = localStorage.getItem("pembeli");
+    if (!stored) return null;
+    try {
+        return JSON.parse(stored) as PembeliSession;
+    } catch {
+        return null;
+    }
+}
+
+export function setPembeliSession(data: PembeliSession): void {
+    // Simpan ke localStorage (client-side)
+    localStorage.setItem("pembeli", JSON.stringify(data));
+    // Simpan ke cookie (untuk middleware Next.js server-side)
+    setCookie(PEMBELI_COOKIE, JSON.stringify({ id: data.id_pembeli, nama: data.nama_pembeli }), COOKIE_MAX_AGE);
+}
+
+export function clearPembeliSession(): void {
+    localStorage.removeItem("pembeli");
+    deleteCookie(PEMBELI_COOKIE);
 }
