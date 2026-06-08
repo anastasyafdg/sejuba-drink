@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Pembeli;
 
 class Pesanan extends Model
 {
@@ -28,6 +29,15 @@ class Pesanan extends Model
             'id_pesanan'
         );
     }
+
+    public function pembeli()
+{
+    return $this->belongsTo(
+        Pembeli::class,
+        'id_pembeli',
+        'id_pembeli'
+    );
+}
 
     public function bayar($id)
 {

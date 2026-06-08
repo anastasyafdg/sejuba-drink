@@ -24,8 +24,11 @@ export default function RiwayatPemesananPage() {
 
       try {
 
-        const idPembeli =
-          sessionStorage.getItem("id_pembeli");
+        const pembeli = JSON.parse(
+          localStorage.getItem("pembeli") || "{}"
+        );
+
+        const idPembeli = pembeli.id_pembeli;
 
         if (!idPembeli) return;
 
@@ -113,12 +116,10 @@ export default function RiwayatPemesananPage() {
                 {/* Left Side: Product Info */}
                 <div className="flex items-center gap-6">
                   <div className="bg-[#E5EFE7] w-24 h-24 rounded-lg flex items-center justify-center shrink-0">
-                    <Image
+                    <img
                       src={`http://127.0.0.1:8000/storage/${order.detail_pesanan?.[0]?.produk?.image}`}
-                      alt={order.detail_pesanan?.[0]?.produk?.name}
-                      width={40}
-                      height={80}
-                      className="object-contain w-auto h-[70px]"
+                      alt={order.detail_pesanan?.[0]?.produk?.name || "Produk"}
+                      className="h-[70px] w-auto object-contain"
                     />
                   </div>
                   <div>

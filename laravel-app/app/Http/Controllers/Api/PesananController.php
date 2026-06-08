@@ -10,9 +10,19 @@ use Illuminate\Http\Request;
 class PesananController extends Controller
 {
     public function index()
-    {
-        return Pesanan::with('detailPesanan')->get();
-    }
+{
+    $pesanan = Pesanan::with(
+        'pembeli',
+        'detailPesanan.produk'
+    )
+    ->orderBy('id_pesanan', 'desc')
+    ->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => $pesanan
+    ]);
+}
 
     public function store(Request $request)
     {
@@ -99,9 +109,7 @@ public function show($id)
 
 public function riwayatPembeli($id)
 {
-    $pesanan = Pesanan::with(
-        'detailPesanan.produk'
-    )
+    $pesanan = Pesanan::with('detailPesanan.produk') 
     ->where('id_pembeli', $id)
     ->orderBy('id_pesanan', 'desc')
     ->get();
