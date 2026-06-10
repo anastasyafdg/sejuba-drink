@@ -2,43 +2,38 @@
 
 import { useState, useMemo, useEffect } from "react";
 
-/* ── Types (sesuai struktur API Laravel) ── */
+/* ── Types ── */
 type StatusPesanan = "Diproses" | "Dikirim" | "Selesai";
 
-interface ApiDetailPesanan {
-    id_detail: number;
-    id_pesanan: number;
-    id_produk: number;
-    ukuran: string;
-    jumlah: number;
-    harga_satuan: number;
-    subtotal: number;
-    produk?: {
-        id: number;
-        name: string;
-        [key: string]: any;
-    };
-}
-
-interface ApiPembeli {
-    id_pembeli: number;
-    nama_pembeli: string;
-    email: string;
-    no_telepon: string;
-    [key: string]: any;
-}
-
-interface ApiPesanan {
+interface Pesanan {
     id_pesanan: number;
     id_pembeli: number;
     tanggal_pesanan: string;
     total_harga: number;
     alamat_pengiriman: string;
     status_pembayaran: string;
-    status_pesanan: string;
-    pembeli?: ApiPembeli;
-    detail_pesanan?: ApiDetailPesanan[];
-    [key: string]: any;
+    status_pesanan: StatusPesanan;
+
+    pembeli?: {
+        id_pembeli: number;
+        nama_pembeli: string;
+        email: string;
+        no_telepon: string;
+    };
+
+    detail_pesanan?: {
+        id_detail: number;
+        id_produk: number;
+        jumlah: number;
+        ukuran: string;
+        harga_satuan: number;
+        subtotal: number;
+
+        produk?: {
+            id: number;
+            name: string;
+        };
+    }[];
 }
 
 /* ── Helpers ── */
@@ -48,15 +43,7 @@ const BORDER = "rgba(82,183,136,0.15)";
 const CARD = "0 2px 16px rgba(27,67,50,0.07)";
 
 function formatRp(n: number) {
-    if (isNaN(n) || n === undefined || n === null) return "Rp 0";
     return "Rp " + new Intl.NumberFormat("id-ID").format(n);
-}
-
-function formatTanggal(raw: string): string {
-    if (!raw) return "-";
-    const d = new Date(raw);
-    if (isNaN(d.getTime())) return raw;
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
 const STATUS_STYLE: Record<StatusPesanan, { bg: string; color: string; dot: string }> = {
@@ -65,12 +52,6 @@ const STATUS_STYLE: Record<StatusPesanan, { bg: string; color: string; dot: stri
     Selesai: { bg: "rgba(82,183,136,0.12)", color: "#1b7a4a", dot: "#52b788" },
 };
 
-const VALID_STATUSES: StatusPesanan[] = ["Diproses", "Dikirim", "Selesai"];
-
-function isValidStatus(s: string): s is StatusPesanan {
-    return VALID_STATUSES.includes(s as StatusPesanan);
-}
-
 const AVATAR_COLORS = ["#52b788", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 function avatarColor(name: string) {
     let h = 0;
@@ -78,40 +59,14 @@ function avatarColor(name: string) {
     return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
-/* ── Helper: ambil field dari ApiPesanan ── */
-function getNamaPelanggan(p: ApiPesanan): string {
-    return p.pembeli?.nama_pembeli || "-";
-}
-function getNoTelepon(p: ApiPesanan): string {
-    return p.pembeli?.no_telepon || "-";
-}
-function getNamaProduk(p: ApiPesanan): string {
-    return p.detail_pesanan?.[0]?.produk?.name || "-";
-}
-function getQty(p: ApiPesanan): number {
-    // jumlah total qty dari semua detail
-    if (!p.detail_pesanan || p.detail_pesanan.length === 0) return 0;
-    return p.detail_pesanan.reduce((sum, d) => sum + (d.jumlah || 0), 0);
-}
-function getTotalHarga(p: ApiPesanan): number {
-    return Number(p.total_harga) || 0;
-}
-function getOngkir(p: ApiPesanan): number {
-    // ongkir tidak ada di model, default 0
-    return 0;
-}
-function getStatus(p: ApiPesanan): StatusPesanan {
-    const s = p.status_pesanan;
-    if (isValidStatus(s)) return s;
-    // fallback: status lain dari API ("Menunggu Konfirmasi", dll) → tampilkan Diproses
-    return "Diproses";
-}
 
 /* ── Detail Modal ── */
-function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = getTotalHarga(pesanan);
-    const ongkir = getOngkir(pesanan);
-    const grandTotal = subTotal + ongkir;
+/* ── Detail Modal ── */
+function DetailModal({ pesanan, onClose }: { pesanan: Pesanan; onClose: () => void }) {
+    const subTotal = pesanan.total_harga;
+    const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
+    const noHp = pesanan.pembeli?.no_telepon ?? "-";
+    const namaProduk = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
 
     const RowInfo = ({ label, value }: { label: string; value: React.ReactNode }) => (
         <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
@@ -132,58 +87,33 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
                 {/* Section 1: Informasi Pesanan */}
                 <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
-                    <RowInfo label="Pelanggan" value={getNamaPelanggan(pesanan)} />
-                    <RowInfo label="No. HP" value={getNoTelepon(pesanan)} />
+                    <RowInfo label="Pelanggan" value={namaPelanggan} />
+                    <RowInfo label="No. HP" value={noHp} />
                     <RowInfo label="Alamat" value={pesanan.alamat_pengiriman || "-"} />
-                    <RowInfo label="Tanggal Pesan" value={formatTanggal(pesanan.tanggal_pesanan)} />
+                    <RowInfo label="Tanggal Pesan" value={new Date(pesanan.tanggal_pesanan).toLocaleDateString("id-ID")} />
                 </div>
 
                 {/* Section 2: Rincian Pesanan */}
                 <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px", marginBottom: 8 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Rincian Pesanan</h3>
 
-                    {/* Items dari detail_pesanan */}
-                    {(pesanan.detail_pesanan && pesanan.detail_pesanan.length > 0)
-                        ? pesanan.detail_pesanan.map((d, i) => (
-                            <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{d.produk?.name || "-"}</div>
-                                    <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{d.jumlah} pcs</div>
-                                </div>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                    {formatRp(Number(d.subtotal) || 0)}
-                                </div>
-                            </div>
-                        ))
-                        : (
-                            <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{getNamaProduk(pesanan)}</div>
-                                    <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{getQty(pesanan)} pcs</div>
-                                </div>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                    {formatRp(subTotal)}
-                                </div>
-                            </div>
-                        )
-                    }
+                    {/* Item */}
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{namaProduk}</div>
+                            <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{pesanan.detail_pesanan?.reduce((sum: number, item: any) => sum + item.jumlah, 0) ?? 0} pcs</div>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+                            {formatRp(subTotal)}
+                        </div>
+                    </div>
 
                     <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
-
-                    {/* Subtotals */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Subtotal</span>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Ongkir</span>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(ongkir)}</span>
-                    </div>
 
                     {/* Total */}
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
-                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(grandTotal)}</span>
+                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal)}</span>
                     </div>
                 </div>
 
@@ -195,10 +125,11 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
 }
 
 /* ── Invoice Modal ── */
-function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = getTotalHarga(pesanan);
-    const ongkir = getOngkir(pesanan);
-    const grandTotal = subTotal + ongkir;
+function InvoiceModal({ pesanan, onClose }: { pesanan: Pesanan; onClose: () => void }) {
+    const subTotal = pesanan.total_harga;
+    const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
+    const noHp = pesanan.pembeli?.no_telepon ?? "-";
+    const namaProduk = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
 
     const RowInfo = ({ label, value }: { label: string; value: React.ReactNode }) => (
         <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
@@ -245,58 +176,33 @@ function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =
                     {/* Section 1: Informasi Pesanan */}
                     <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
-                        <RowInfo label="Pelanggan" value={getNamaPelanggan(pesanan)} />
-                        <RowInfo label="No. HP" value={getNoTelepon(pesanan)} />
+                        <RowInfo label="Pelanggan" value={namaPelanggan} />
+                        <RowInfo label="No. HP" value={noHp} />
                         <RowInfo label="Alamat" value={pesanan.alamat_pengiriman || "-"} />
-                        <RowInfo label="Tanggal Pesan" value={formatTanggal(pesanan.tanggal_pesanan)} />
+                        <RowInfo label="Tanggal Pesan" value={new Date(pesanan.tanggal_pesanan).toLocaleDateString("id-ID")} />
                     </div>
 
                     {/* Section 2: Rincian Pesanan */}
                     <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px", marginBottom: 8 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Rincian Pesanan</h3>
 
-                        {/* Items */}
-                        {(pesanan.detail_pesanan && pesanan.detail_pesanan.length > 0)
-                            ? pesanan.detail_pesanan.map((d, i) => (
-                                <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{d.produk?.name || "-"}</div>
-                                        <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{d.jumlah} pcs</div>
-                                    </div>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                        {formatRp(Number(d.subtotal) || 0)}
-                                    </div>
-                                </div>
-                            ))
-                            : (
-                                <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{getNamaProduk(pesanan)}</div>
-                                        <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{getQty(pesanan)} pcs</div>
-                                    </div>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                        {formatRp(subTotal)}
-                                    </div>
-                                </div>
-                            )
-                        }
+                        {/* Item */}
+                        <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{namaProduk}</div>
+                                <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{pesanan.detail_pesanan?.reduce((sum: number, item: any) => sum + item.jumlah, 0) ?? 0} pcs</div>
+                            </div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+                                {formatRp(subTotal)}
+                            </div>
+                        </div>
 
                         <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
-
-                        {/* Subtotals */}
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Subtotal</span>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Ongkir</span>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(ongkir)}</span>
-                        </div>
 
                         {/* Total */}
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
-                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(grandTotal)}</span>
+                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal)}</span>
                         </div>
                     </div>
                 </div>
@@ -345,72 +251,118 @@ function FilterBtn({ label, active, onClick }: { label: string; active: boolean;
 
 /* ── Main Page ── */
 export default function PesananPage() {
-    const [pesanan, setPesanan] = useState<ApiPesanan[]>([]);
+    const [pesanan, setPesanan] = useState<any[]>([]);
     const [search, setSearch] = useState("");
     const [activeStatus, setActiveStatus] = useState<"Semua" | StatusPesanan>("Semua");
-    const [detailTarget, setDetailTarget] = useState<ApiPesanan | null>(null);
-    const [invoiceTarget, setInvoiceTarget] = useState<ApiPesanan | null>(null);
+    const [detailTarget, setDetailTarget] = useState<Pesanan | null>(null);
+    const [invoiceTarget, setInvoiceTarget] = useState<Pesanan | null>(null);
 
     useEffect(() => {
+
         const loadPesanan = async () => {
+
             try {
-                const response = await fetch("http://127.0.0.1:8000/api/pesanan");
+
+                const response = await fetch(
+                    "http://127.0.0.1:8000/api/pesanan"
+                );
+
                 const data = await response.json();
 
-                console.log("[PesananPage] Raw API data:", data);
-                if (data.data && data.data.length > 0) {
-                    console.log("[PesananPage] Contoh item pertama:", data.data[0]);
-                    console.log("[PesananPage] status_pesanan:", data.data[0].status_pesanan);
-                    console.log("[PesananPage] total_harga:", data.data[0].total_harga);
-                    console.log("[PesananPage] detail_pesanan:", data.data[0].detail_pesanan);
-                }
+                console.log(data);
 
-                setPesanan(data.data || []);
+                console.log(data.data[0]);
+
+                console.log(data.data[0]?.detail_pesanan);
+
+                setPesanan(data.data);
+
             } catch (error) {
-                console.error("[PesananPage] Gagal fetch:", error);
+
+                console.error(error);
             }
         };
 
         loadPesanan();
+
     }, []);
 
-    // Update status lokal sementara (optimistic update)
-    const updateStatus = (id: number, status: StatusPesanan) =>
-        setPesanan(ps => ps.map(p => p.id_pesanan === id ? { ...p, status_pesanan: status } : p));
+    const updateStatus = async (
+        id: number,
+        status: StatusPesanan
+    ) => {
+
+        try {
+
+            const response = await fetch(
+                `http://127.0.0.1:8000/api/pesanan/${id}/status`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        status_pesanan: status,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+
+                setPesanan((ps) =>
+                    ps.map((p) =>
+                        p.id_pesanan === id
+                            ? { ...p, status_pesanan: status }
+                            : p
+                    )
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+        }
+    };
 
     const filtered = useMemo(() => {
-        return pesanan.filter((p: ApiPesanan) => {
-            const namaPembeli = p.pembeli?.nama_pembeli || "";
-            const namaProduk = p.detail_pesanan?.[0]?.produk?.name || "";
-            const statusPesanan = p.status_pesanan || "";
+        return pesanan.filter((p: any) => {
 
-            // Filter status: cocokkan dengan status_pesanan dari API
-            const statusMatch =
-                activeStatus === "Semua" ||
-                statusPesanan === activeStatus;
+            const namaPembeli =
+                p.pembeli?.nama_pembeli || "";
 
-            // Filter pencarian
-            const searchMatch =
-                p.id_pesanan
-                    .toString()
-                    .includes(search) ||
-                namaPembeli
-                    .toLowerCase()
-                    .includes(search.toLowerCase()) ||
-                namaProduk
-                    .toLowerCase()
-                    .includes(search.toLowerCase());
+            const namaProduk =
+                p.detail_pesanan?.[0]?.produk?.name || "";
 
-            return statusMatch && searchMatch;
+            return (
+                (activeStatus === "Semua" ||
+                    p.status_pesanan === activeStatus) &&
+
+                (
+                    p.id_pesanan
+                        .toString()
+                        .includes(search) ||
+
+                    namaPembeli
+                        .toLowerCase()
+                        .includes(search.toLowerCase()) ||
+
+                    namaProduk
+                        .toLowerCase()
+                        .includes(search.toLowerCase())
+                )
+            );
         });
     }, [pesanan, activeStatus, search]);
 
-    // Total pendapatan dari total_harga
-    const totalPendapatan = pesanan.reduce((s, p) => s + getTotalHarga(p), 0);
-
-    // Hitung stat berdasarkan status_pesanan
-    const countOf = (s: StatusPesanan) =>
-        pesanan.filter(p => p.status_pesanan === s).length;
+    const totalPendapatan =
+        pesanan.reduce(
+            (s, p) => s + p.total_harga,
+            0
+        );
+    const countOf = (s: StatusPesanan) => pesanan.filter(p => p.status_pesanan === s).length;
 
     const [page, setPage] = useState(1);
     const PER_PAGE = 10;
@@ -420,6 +372,8 @@ export default function PesananPage() {
         filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
         [filtered, safePage]
     );
+
+    console.log(pesanan);
 
     return (
         <>
@@ -475,17 +429,13 @@ export default function PesananPage() {
                         <tbody>
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} style={{ padding: 48, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
+                                    <td colSpan={8} style={{ padding: 48, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
                                         📦 Tidak ada pesanan ditemukan
                                     </td>
                                 </tr>
                             ) : paginated.map((p, idx) => {
-                                const namaPelanggan = getNamaPelanggan(p);
-                                const ac = avatarColor(namaPelanggan);
-                                const ini = namaPelanggan.charAt(0).toUpperCase() || "?";
-                                const statusVal = getStatus(p);
-                                const statusStyle = STATUS_STYLE[statusVal] ?? STATUS_STYLE["Diproses"];
-
+                                const ac = avatarColor(p.pembeli?.nama_pembeli || "");
+                                const ini = p.pembeli?.nama_pembeli?.charAt(0).toUpperCase() || "?";
                                 return (
                                     <tr key={p.id_pesanan}
                                         style={{ background: idx % 2 === 0 ? "#fff" : "#f9fdfa", transition: "background 0.15s" }}
@@ -501,31 +451,25 @@ export default function PesananPage() {
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: ac, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{ini}</div>
-                                                <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}>{namaPelanggan}</span>
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}>{p.pembeli?.nama_pembeli}</span>
                                             </div>
                                         </td>
 
                                         {/* Nama Produk */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
-                                            {getNamaProduk(p)}
-                                        </td>
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>{p.detail_pesanan?.[0]?.produk?.name ?? "-"}</td>
 
                                         {/* Total Produk (qty) */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, textAlign: "center" }}>
-                                            {getQty(p)} pcs
-                                        </td>
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, textAlign: "center" }}>{p.detail_pesanan?.reduce((sum: number, item: any) => sum + item.jumlah, 0) ?? 0} pcs</td>
 
                                         {/* Total Harga */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, whiteSpace: "nowrap" }}>
-                                            {formatRp(getTotalHarga(p))}
-                                        </td>
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, whiteSpace: "nowrap" }}>{formatRp(p.total_harga)}</td>
 
                                         {/* Status */}
                                         <td style={{ padding: "10px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <select
-                                                value={statusVal}
+                                                value={p.status_pesanan}
                                                 onChange={e => updateStatus(p.id_pesanan, e.target.value as StatusPesanan)}
-                                                style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: `1.5px solid ${statusStyle.dot}`, background: statusStyle.bg, color: statusStyle.color, cursor: "pointer", outline: "none", fontFamily: "'Poppins', sans-serif", appearance: "auto" }}
+                                                style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: `1.5px solid ${STATUS_STYLE[p.status_pesanan as StatusPesanan]?.dot ?? "#999"}`, background: STATUS_STYLE[p.status_pesanan as StatusPesanan]?.bg ?? "#eee", color: STATUS_STYLE[p.status_pesanan as StatusPesanan]?.color ?? "#666", cursor: "pointer", outline: "none", fontFamily: "'Poppins', sans-serif", appearance: "auto" }}
                                             >
                                                 <option value="Diproses">Diproses</option>
                                                 <option value="Dikirim">Dikirim</option>
@@ -533,10 +477,10 @@ export default function PesananPage() {
                                             </select>
                                         </td>
 
+
                                         {/* Tanggal */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 12, color: "#9ca3af", whiteSpace: "nowrap" }}>
-                                            {formatTanggal(p.tanggal_pesanan)}
-                                        </td>
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 12, color: "#9ca3af", whiteSpace: "nowrap" }}>{new Date(p.tanggal_pesanan)
+                                            .toLocaleDateString("id-ID")}</td>
 
                                         {/* Invoice */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>

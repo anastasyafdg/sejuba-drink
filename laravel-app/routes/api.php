@@ -26,3 +26,4 @@ Route::post('/pesanan', [PesananController::class, 'store']);
 Route::put('/pesanan/{id}/bayar', [PesananController::class, 'bayar']);
 Route::get('/pesanan/{id}', [PesananController::class, 'show']);
 Route::get('/pembeli/{id}/pesanan', [PesananController::class, 'riwayatPembeli']);
+Route::put('/pesanan/{id}/status', [PesananController::class, 'updateStatus']);
