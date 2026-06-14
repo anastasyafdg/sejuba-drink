@@ -5,6 +5,7 @@ use App\Http\Controllers\PenjualAuthController;
 use App\Http\Controllers\Api\PembeliAuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PesananController;
+use App\Http\Controllers\Api\UlasanController;
 
 // ================= PENJUAL =================
 Route::post('/penjual/login', [PenjualAuthController::class, 'loginApi']);
@@ -27,3 +28,7 @@ Route::put('/pesanan/{id}/bayar', [PesananController::class, 'bayar']);
 Route::get('/pesanan/{id}', [PesananController::class, 'show']);
 Route::get('/pembeli/{id}/pesanan', [PesananController::class, 'riwayatPembeli']);
 Route::put('/pesanan/{id}/status', [PesananController::class, 'updateStatus']);
+
+// ================= ULASAN =================
+Route::get('/ulasan', [UlasanController::class, 'index']);
+Route::post('/ulasan', [UlasanController::class, 'store']);

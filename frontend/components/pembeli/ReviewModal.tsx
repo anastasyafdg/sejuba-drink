@@ -1,34 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
-const products = [
-    {
-        id: 1,
-        name: "Green Series",
-        size: "250 ml",
-        image: "/images/produk/green.png",
-    },
-    {
-        id: 2,
-        name: "Red Series",
-        size: "250 ml",
-        image: "/images/produk/red.png",
-    },
-    {
-        id: 3,
-        name: "Orange Series",
-        size: "250 ml",
-        image: "/images/produk/orange.png",
-    },
-];
+interface Product {
+    id: number;
+    name: string;
+    image?: string;
+    category?: string;
+}
 
 export default function ReviewModal({ open, setOpen }: any) {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
-    const [selectedProduct, setSelectedProduct] = useState(products[0]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [ulasan, setUlasan] = useState("");
+
+    useEffect(() => {
+
+        const loadProduk = async () => {
+
+            try {
+
+                const response = await fetch(
+                    "http://127.0.0.1:8000/api/products"
+                );
+
+                const data = await response.json();
+
+                console.log(data);
+
+                setProducts(data);
+
+                if (data.length > 0) {
+                    setSelectedProduct(data[0]);
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+        };
+
+        loadProduk();
+
+    }, []);
+
+    const submitUlasan = async () => {
+        try {
+
+            if (!selectedProduct) {
+                alert("Pilih produk terlebih dahulu");
+                return;
+            }
+
+            if (rating === 0) {
+                alert("Pilih rating terlebih dahulu");
+                return;
+            }
+
+            if (!ulasan.trim()) {
+                alert("Isi ulasan terlebih dahulu");
+                return;
+            }
+
+            const response = await fetch(
+                "http://127.0.0.1:8000/api/ulasan",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        id_pembeli: 2, // sementara dulu
+                        id_produk: selectedProduct.id,
+                        rating,
+                        ulasan,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success("Ulasan berhasil ditambahkan");
+
+                setOpen(false);
+
+                window.location.reload();
+            }
+
+        } catch (error) {
+
+            toast.error("Gagal menambahkan ulasan");
+
+        }
+    };
 
     if (!open) return null;
 
@@ -66,8 +137,12 @@ export default function ReviewModal({ open, setOpen }: any) {
                     >
                         <div className="flex items-center gap-3">
                             <div className="bg-[#DCE5DE] rounded-[14px] p-3">
-                                <Image
-                                    src={selectedProduct.image}
+                                <img
+                                    src={
+                                        selectedProduct?.image
+                                            ? `http://127.0.0.1:8000/storage/${selectedProduct.image}`
+                                            : "/images/logo/logo-sejuba.png"
+                                    }
                                     alt=""
                                     width={50}
                                     height={50}
@@ -76,10 +151,10 @@ export default function ReviewModal({ open, setOpen }: any) {
 
                             <div>
                                 <p className="font-semibold text-[16px]">
-                                    {selectedProduct.name}
+                                    {selectedProduct?.name}
                                 </p>
                                 <p className="text-gray-500 text-xs">
-                                    {selectedProduct.size}
+                                    Produk Sejuba Drink
                                 </p>
                             </div>
                         </div>
@@ -101,10 +176,19 @@ export default function ReviewModal({ open, setOpen }: any) {
                                     }}
                                     className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer"
                                 >
-                                    <Image src={p.image} alt="" width={35} height={35} />
+                                    <img
+                                        src={
+                                            p.image
+                                                ? `http://127.0.0.1:8000/storage/${p.image}`
+                                                : "/images/logo/logo-sejuba.png"
+                                        }
+                                        alt=""
+                                        width={35}
+                                        height={35}
+                                    />
                                     <div>
                                         <p className="text-sm font-medium">{p.name}</p>
-                                        <p className="text-xs text-gray-500">{p.size}</p>
+                                        <p className="text-xs text-gray-500">Produk Sejuba Drink</p>
                                     </div>
                                 </div>
                             ))}
@@ -144,6 +228,8 @@ export default function ReviewModal({ open, setOpen }: any) {
                     <p className="font-semibold text-[16px] mb-2">Tulis Ulasan</p>
 
                     <textarea
+                        value={ulasan}
+                        onChange={(e) => setUlasan(e.target.value)}
                         placeholder="Ceritakan pengalaman mu menikmati Sejuba Drink"
                         className="w-full h-[90px] rounded-xl bg-[#EAEAEA] p-3 text-sm outline-none resize-none"
                     ></textarea>
@@ -158,7 +244,10 @@ export default function ReviewModal({ open, setOpen }: any) {
                         Batal
                     </button>
 
-                    <button className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700 transition">
+                    <button
+                        onClick={submitUlasan}
+                        className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700 transition"
+                    >
                         Kirim Ulasan
                     </button>
                 </div>
