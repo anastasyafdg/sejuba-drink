@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CartItem {
+    id: number;
     name: string;
     image: string;
     price: number;
@@ -41,13 +43,39 @@ export default function Pemesanan2Page() {
     useEffect(() => {
         try {
             const stored = sessionStorage.getItem("sejuba_cart");
-            if (stored) { setCart(JSON.parse(stored)); return; }
+
+            if (stored) {
+                setCart(JSON.parse(stored));
+                return;
+            }
         } catch { }
+
         // Demo fallback
         setCart([
-            { name: "Purple Lime", image: "/images/produk/purple.png", price: 10000, qty: 4, size: "250 ml" },
-            { name: "Blue Lime", image: "/images/produk/blue.png", price: 10000, qty: 1, size: "250 ml" },
-            { name: "Green Series", image: "/images/produk/green.png", price: 13000, qty: 2, size: "250 ml" },
+            {
+                id: 3,
+                name: "Purple Lime",
+                image: "/images/produk/purple.png",
+                price: 10000,
+                qty: 4,
+                size: "250 ml",
+            },
+            {
+                id: 4,
+                name: "Blue Lime",
+                image: "/images/produk/blue.png",
+                price: 10000,
+                qty: 1,
+                size: "250 ml",
+            },
+            {
+                id: 5,
+                name: "Green Series",
+                image: "/images/produk/green.png",
+                price: 13000,
+                qty: 2,
+                size: "250 ml",
+            },
         ]);
     }, []);
 
@@ -151,21 +179,83 @@ export default function Pemesanan2Page() {
     // ── Handlers ──────────────────────────────────────────────────────────────
     const handleBatal = () => router.back();
 
-    const handleBayar = () => {
-        // Simpan semua data order ke sessionStorage → dibaca di halaman pembayaran
+    const handleBayar = async () => {
         try {
-            sessionStorage.setItem("sejuba_order", JSON.stringify({
-                nama,
-                email,
-                telepon,
-                alamat,
-                jasa,
-                cart,
-                total,
-                ongkir: jasa === "delivery" ? ONGKIR : 0,
-            }));
-        } catch { }
-        router.push("/pembeli/pembayaran");
+
+            const pembeli = JSON.parse(
+                localStorage.getItem("pembeli") || "{}"
+            );
+
+            if (!pembeli.id_pembeli) {
+                toast.error("Silakan login terlebih dahulu");
+                router.push("/pembeli/login");
+                return;
+            }
+
+            const response = await fetch(
+                "http://127.0.0.1:8000/api/pesanan",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        id_pembeli: pembeli.id_pembeli,
+                        alamat_pengiriman: alamat,
+                        items: cart.map((item) => ({
+                            id: item.id,
+                            size: item.size,
+                            price: item.price,
+                            qty: item.qty,
+                        })),
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            sessionStorage.setItem(
+                "id_pesanan",
+                data.data.id_pesanan.toString()
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Gagal membuat pesanan"
+                );
+            }
+
+            sessionStorage.setItem(
+                "sejuba_order",
+                JSON.stringify({
+                    nama,
+                    email,
+                    telepon,
+                    alamat,
+                    jasa,
+                    cart,
+                    total,
+                    ongkir: jasa === "delivery" ? ONGKIR : 0,
+                })
+            );
+
+            sessionStorage.removeItem("sejuba_cart");
+
+            toast.success(
+                "Pesanan berhasil dibuat! Silakan lanjutkan pembayaran."
+            );
+
+            setTimeout(() => {
+                router.push("/pembeli/pembayaran");
+            }, 1500);
+
+        } catch (error) {
+            console.error(error);
+
+            toast.error(
+                "Terjadi kesalahan saat membuat pesanan"
+            );
+        }
     };
 
     // ─────────────────────────────────────────────────────────────────────────

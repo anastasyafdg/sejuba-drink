@@ -22,7 +22,7 @@ return new class extends Migration
 
             $table->enum('status_pembayaran', [
                 'Menunggu Pembayaran',
-                'Lunas',
+                'Berhasil',
                 'Gagal'
             ])->default('Menunggu Pembayaran');
 
