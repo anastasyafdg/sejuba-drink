@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import ReviewModal from "@/components/pembeli/ReviewModal";
+
 
 /* ================= TESTIMONI DATA ================= */
 const testimonials = [
@@ -41,9 +42,51 @@ const initialReviews = [
   { id: 5, name: "Keonho", rating: 5, text: "Packaging bagus, rasanya juga oke." },
 ];
 
+interface Review {
+  id_ulasan: number;
+  rating: number;
+  ulasan: string;
+
+  pembeli: {
+    nama_pembeli: string;
+  };
+
+  produk: {
+    id: number;
+    name: string;
+    image?: string;
+  };
+}
+
 export default function UlasanPage() {
-  const [reviews, setReviews] = useState(initialReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [openModal, setOpenModal] = useState(false);
+
+  useEffect(() => {
+    const loadUlasan = async () => {
+
+      try {
+
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/ulasan"
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+          setReviews(data.data);
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+    };
+
+    loadUlasan();
+
+  }, []);
 
   return (
     <div className="w-full">
@@ -155,7 +198,7 @@ export default function UlasanPage() {
           {/* LIST */}
           <div className="space-y-8">
             {reviews.map((r, i) => (
-              <div key={r.id}>
+              <div key={r.id_ulasan}>
                 <div className="flex gap-5">
 
                   {/* AVATAR */}
@@ -167,16 +210,22 @@ export default function UlasanPage() {
 
                   {/* CONTENT */}
                   <div className="flex-1">
-                    <p className="text-white font-semibold text-[16px]">
-                      {r.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-semibold text-[16px]">
+                        {r.pembeli?.nama_pembeli}
+                      </p>
+
+                      <span className="text-white/70 text-sm">
+                        • {r.produk?.name}
+                      </span>
+                    </div>
 
                     <div className="text-yellow-300 text-sm mt-1 mb-1">
-                      {"★★★★★"}
+                      {"★".repeat(r.rating)}
                     </div>
 
                     <p className="text-white text-[14px] leading-relaxed">
-                      {r.text}
+                      {r.ulasan}
                     </p>
                   </div>
                 </div>
