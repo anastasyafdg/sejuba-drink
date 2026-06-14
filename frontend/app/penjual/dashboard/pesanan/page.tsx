@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 
-/* ── Types (sesuai struktur API Laravel) ── */
+/* ── Types ── */
 type StatusPesanan = "Diproses" | "Dikirim" | "Selesai";
 
 interface ApiDetailPesanan {
@@ -41,35 +41,22 @@ interface ApiPesanan {
     [key: string]: unknown;
 }
 
-/* ── Helpers ── */
-const P = "#52b788";
-const DK = "#1b4332";
+/* ── Design Tokens ── */
+const P      = "#52b788";
+const DK     = "#1b4332";
 const BORDER = "rgba(82,183,136,0.15)";
-const CARD = "0 2px 16px rgba(27,67,50,0.07)";
+const CARD   = "0 2px 16px rgba(27,67,50,0.07)";
 
+/* ── Helpers ── */
 function formatRp(n: number) {
-    if (isNaN(n) || n === undefined || n === null) return "Rp 0";
     return "Rp " + new Intl.NumberFormat("id-ID").format(n);
-}
-
-function formatTanggal(raw: string): string {
-    if (!raw) return "-";
-    const d = new Date(raw);
-    if (isNaN(d.getTime())) return raw;
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
 const STATUS_STYLE: Record<StatusPesanan, { bg: string; color: string; dot: string }> = {
     Diproses: { bg: "rgba(245,158,11,0.12)", color: "#b45309", dot: "#f59e0b" },
-    Dikirim: { bg: "rgba(59,130,246,0.1)", color: "#1d4ed8", dot: "#3b82f6" },
-    Selesai: { bg: "rgba(82,183,136,0.12)", color: "#1b7a4a", dot: "#52b788" },
+    Dikirim:  { bg: "rgba(59,130,246,0.1)",  color: "#1d4ed8", dot: "#3b82f6" },
+    Selesai:  { bg: "rgba(82,183,136,0.12)", color: "#1b7a4a", dot: "#52b788" },
 };
-
-const VALID_STATUSES: StatusPesanan[] = ["Diproses", "Dikirim", "Selesai"];
-
-function isValidStatus(s: string): s is StatusPesanan {
-    return VALID_STATUSES.includes(s as StatusPesanan);
-}
 
 const AVATAR_COLORS = ["#52b788", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 function avatarColor(name: string) {
@@ -78,36 +65,7 @@ function avatarColor(name: string) {
     return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
-/* ── Helper: ambil field dari ApiPesanan ── */
-function getNamaPelanggan(p: ApiPesanan): string {
-    return p.pembeli?.nama_pembeli || "-";
-}
-function getNoTelepon(p: ApiPesanan): string {
-    return p.pembeli?.no_telepon || "-";
-}
-function getNamaProduk(p: ApiPesanan): string {
-    return p.detail_pesanan?.[0]?.produk?.name || "-";
-}
-function getQty(p: ApiPesanan): number {
-    // jumlah total qty dari semua detail
-    if (!p.detail_pesanan || p.detail_pesanan.length === 0) return 0;
-    return p.detail_pesanan.reduce((sum, d) => sum + (d.jumlah || 0), 0);
-}
-function getTotalHarga(p: ApiPesanan): number {
-    return Number(p.total_harga) || 0;
-}
-function getOngkir(p: ApiPesanan): number {
-    // ongkir tidak ada di model, default 0
-    return 0;
-}
-function getStatus(p: ApiPesanan): StatusPesanan {
-    const s = p.status_pesanan;
-    if (isValidStatus(s)) return s;
-    // fallback: status lain dari API ("Menunggu Konfirmasi", dll) → tampilkan Diproses
-    return "Diproses";
-}
-
-/* ── Row Info Helper Component (module-level agar tidak create component setiap render) ── */
+/* ── Row Info Helper ── */
 function RowInfo({ label, value }: { label: string; value: React.ReactNode }) {
     return (
         <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
@@ -119,9 +77,11 @@ function RowInfo({ label, value }: { label: string; value: React.ReactNode }) {
 
 /* ── Detail Modal ── */
 function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = getTotalHarga(pesanan);
-    const ongkir = getOngkir(pesanan);
-    const grandTotal = subTotal + ongkir;
+    const subTotal       = pesanan.total_harga;
+    const namaPelanggan  = pesanan.pembeli?.nama_pembeli ?? "-";
+    const noHp           = pesanan.pembeli?.no_telepon ?? "-";
+    const namaProduk     = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
+    const totalQty       = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0;
 
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -132,66 +92,36 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
                     Detail Pesanan #{pesanan.id_pesanan}
                 </h2>
 
-                {/* Section 1: Informasi Pesanan */}
+                {/* Informasi Pesanan */}
                 <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
-                    <RowInfo label="Pelanggan" value={getNamaPelanggan(pesanan)} />
-                    <RowInfo label="No. HP" value={getNoTelepon(pesanan)} />
-                    <RowInfo label="Alamat" value={pesanan.alamat_pengiriman || "-"} />
-                    <RowInfo label="Tanggal Pesan" value={formatTanggal(pesanan.tanggal_pesanan)} />
+                    <RowInfo label="Pelanggan"    value={namaPelanggan} />
+                    <RowInfo label="No. HP"       value={noHp} />
+                    <RowInfo label="Alamat"       value={pesanan.alamat_pengiriman || "-"} />
+                    <RowInfo label="Tanggal Pesan" value={new Date(pesanan.tanggal_pesanan).toLocaleDateString("id-ID")} />
                 </div>
 
-                {/* Section 2: Rincian Pesanan */}
+                {/* Rincian Pesanan */}
                 <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px", marginBottom: 8 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Rincian Pesanan</h3>
 
-                    {/* Items dari detail_pesanan */}
-                    {(pesanan.detail_pesanan && pesanan.detail_pesanan.length > 0)
-                        ? pesanan.detail_pesanan.map((d, i) => (
-                            <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{d.produk?.name || "-"}</div>
-                                    <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{d.jumlah} pcs</div>
-                                </div>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                    {formatRp(Number(d.subtotal) || 0)}
-                                </div>
-                            </div>
-                        ))
-                        : (
-                            <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{getNamaProduk(pesanan)}</div>
-                                    <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{getQty(pesanan)} pcs</div>
-                                </div>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                    {formatRp(subTotal)}
-                                </div>
-                            </div>
-                        )
-                    }
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{namaProduk}</div>
+                            <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{totalQty} pcs</div>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{formatRp(subTotal)}</div>
+                    </div>
 
                     <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
 
-                    {/* Subtotals */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Subtotal</span>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Ongkir</span>
-                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(ongkir)}</span>
-                    </div>
-
-                    {/* Total */}
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
-                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(grandTotal)}</span>
+                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal)}</span>
                     </div>
                 </div>
 
                 <button onClick={onClose} style={{ position: "absolute", top: 26, right: 26, background: "none", border: "none", fontSize: 20, color: "#9ca3af", cursor: "pointer" }}>✕</button>
-
             </div>
         </div>
     );
@@ -199,16 +129,11 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
 
 /* ── Invoice Modal ── */
 function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = getTotalHarga(pesanan);
-    const ongkir = getOngkir(pesanan);
-    const grandTotal = subTotal + ongkir;
-
-    const RowInfo = ({ label, value }: { label: string; value: React.ReactNode }) => (
-        <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
-            <span style={{ fontSize: 13, color: "#6b7280", width: 140, flexShrink: 0 }}>{label}</span>
-            <span style={{ fontSize: 13, color: "#111827", fontWeight: 500, lineHeight: 1.4 }}>{value}</span>
-        </div>
-    );
+    const subTotal      = pesanan.total_harga;
+    const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
+    const noHp          = pesanan.pembeli?.no_telepon ?? "-";
+    const namaProduk    = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
+    const totalQty      = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0;
 
     const handlePrint = () => {
         const el = document.getElementById("invoice-print-area");
@@ -239,67 +164,37 @@ function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(5px)" }} onClick={onClose} />
             <div style={{ position: "relative", background: "#fff", borderRadius: 16, width: 460, maxWidth: "94vw", boxShadow: "0 24px 80px rgba(0,0,0,0.25)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto", padding: "30px 26px" }}>
 
-                {/* Wrapper untuk area cetak */}
                 <div id="invoice-print-area">
                     <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 24px 0", fontFamily: "'Poppins', sans-serif" }}>
                         Invoice #{pesanan.id_pesanan}
                     </h2>
 
-                    {/* Section 1: Informasi Pesanan */}
+                    {/* Informasi Pesanan */}
                     <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
-                        <RowInfo label="Pelanggan" value={getNamaPelanggan(pesanan)} />
-                        <RowInfo label="No. HP" value={getNoTelepon(pesanan)} />
-                        <RowInfo label="Alamat" value={pesanan.alamat_pengiriman || "-"} />
-                        <RowInfo label="Tanggal Pesan" value={formatTanggal(pesanan.tanggal_pesanan)} />
+                        <RowInfo label="Pelanggan"     value={namaPelanggan} />
+                        <RowInfo label="No. HP"        value={noHp} />
+                        <RowInfo label="Alamat"        value={pesanan.alamat_pengiriman || "-"} />
+                        <RowInfo label="Tanggal Pesan" value={new Date(pesanan.tanggal_pesanan).toLocaleDateString("id-ID")} />
                     </div>
 
-                    {/* Section 2: Rincian Pesanan */}
+                    {/* Rincian Pesanan */}
                     <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px", marginBottom: 8 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Rincian Pesanan</h3>
 
-                        {/* Items */}
-                        {(pesanan.detail_pesanan && pesanan.detail_pesanan.length > 0)
-                            ? pesanan.detail_pesanan.map((d, i) => (
-                                <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{d.produk?.name || "-"}</div>
-                                        <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{d.jumlah} pcs</div>
-                                    </div>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                        {formatRp(Number(d.subtotal) || 0)}
-                                    </div>
-                                </div>
-                            ))
-                            : (
-                                <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{getNamaProduk(pesanan)}</div>
-                                        <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{getQty(pesanan)} pcs</div>
-                                    </div>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-                                        {formatRp(subTotal)}
-                                    </div>
-                                </div>
-                            )
-                        }
+                        <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{namaProduk}</div>
+                                <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>{totalQty} pcs</div>
+                            </div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{formatRp(subTotal)}</div>
+                        </div>
 
                         <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
 
-                        {/* Subtotals */}
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Subtotal</span>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Ongkir</span>
-                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(ongkir)}</span>
-                        </div>
-
-                        {/* Total */}
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
-                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(grandTotal)}</span>
+                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal)}</span>
                         </div>
                     </div>
                 </div>
@@ -314,7 +209,6 @@ function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =
                 </div>
 
                 <button onClick={onClose} style={{ position: "absolute", top: 26, right: 26, background: "none", border: "none", fontSize: 20, color: "#9ca3af", cursor: "pointer" }}>✕</button>
-
             </div>
         </div>
     );
@@ -348,85 +242,73 @@ function FilterBtn({ label, active, onClick }: { label: string; active: boolean;
 
 /* ── Main Page ── */
 export default function PesananPage() {
-    const [pesanan, setPesanan] = useState<ApiPesanan[]>([]);
-    const [search, setSearch] = useState("");
+    const [pesanan, setPesanan]           = useState<ApiPesanan[]>([]);
+    const [search, setSearch]             = useState("");
     const [activeStatus, setActiveStatus] = useState<"Semua" | StatusPesanan>("Semua");
     const [detailTarget, setDetailTarget] = useState<ApiPesanan | null>(null);
     const [invoiceTarget, setInvoiceTarget] = useState<ApiPesanan | null>(null);
-    const [page, setPage] = useState(1);
+    const [page, setPage]                 = useState(1);
 
     useEffect(() => {
         const loadPesanan = async () => {
             try {
                 const response = await fetch("http://127.0.0.1:8000/api/pesanan");
                 const data = await response.json();
-
-                console.log("[PesananPage] Raw API data:", data);
-                if (data.data && data.data.length > 0) {
-                    console.log("[PesananPage] Contoh item pertama:", data.data[0]);
-                    console.log("[PesananPage] status_pesanan:", data.data[0].status_pesanan);
-                    console.log("[PesananPage] total_harga:", data.data[0].total_harga);
-                    console.log("[PesananPage] detail_pesanan:", data.data[0].detail_pesanan);
-                }
-
-                setPesanan(data.data || []);
+                setPesanan(data.data);
             } catch (error) {
-                console.error("[PesananPage] Gagal fetch:", error);
+                console.error(error);
             }
         };
-
         loadPesanan();
     }, []);
 
-    // Update status lokal sementara (optimistic update)
-    const updateStatus = (id: number, status: StatusPesanan) =>
-        setPesanan(ps => ps.map(p => p.id_pesanan === id ? { ...p, status_pesanan: status } : p));
+    const updateStatus = async (id: number, status: StatusPesanan) => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/pesanan/${id}/status`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status_pesanan: status }),
+            });
+            const data = await response.json();
+            if (data.success) {
+                setPesanan(ps =>
+                    ps.map(p => p.id_pesanan === id ? { ...p, status_pesanan: status } : p)
+                );
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const filtered = useMemo(() => {
-        return pesanan.filter((p: ApiPesanan) => {
-            const namaPembeli = p.pembeli?.nama_pembeli || "";
-            const namaProduk = p.detail_pesanan?.[0]?.produk?.name || "";
-            const statusPesanan = p.status_pesanan || "";
-
-            // Filter status: cocokkan dengan status_pesanan dari API
-            const statusMatch =
-                activeStatus === "Semua" ||
-                statusPesanan === activeStatus;
-
-            // Filter pencarian
-            const searchMatch =
-                p.id_pesanan
-                    .toString()
-                    .includes(search) ||
-                namaPembeli
-                    .toLowerCase()
-                    .includes(search.toLowerCase()) ||
-                namaProduk
-                    .toLowerCase()
-                    .includes(search.toLowerCase());
-
-            return statusMatch && searchMatch;
+        return pesanan.filter(p => {
+            const namaPembeli = p.pembeli?.nama_pembeli ?? "";
+            const namaProduk  = p.detail_pesanan?.[0]?.produk?.name ?? "";
+            return (
+                (activeStatus === "Semua" || p.status_pesanan === activeStatus) &&
+                (
+                    p.id_pesanan.toString().includes(search) ||
+                    namaPembeli.toLowerCase().includes(search.toLowerCase()) ||
+                    namaProduk.toLowerCase().includes(search.toLowerCase())
+                )
+            );
         });
     }, [pesanan, activeStatus, search]);
 
-    // Total pendapatan dari total_harga
-    const totalPendapatan = pesanan.reduce((s, p) => s + getTotalHarga(p), 0);
+    const totalPendapatan = pesanan.reduce((s, p) => s + p.total_harga, 0);
+    const countOf = (s: StatusPesanan) => pesanan.filter(p => p.status_pesanan === s).length;
 
-    // Hitung stat berdasarkan status_pesanan
-    const countOf = (s: StatusPesanan) =>
-        pesanan.filter(p => p.status_pesanan === s).length;
-
-    const PER_PAGE = 10;
+    const PER_PAGE   = 10;
     const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-    const safePage = Math.min(page, totalPages);
-    const paginated = useMemo(() =>
+    const safePage   = Math.min(page, totalPages);
+    const paginated  = useMemo(() =>
         filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
         [filtered, safePage]
     );
 
     return (
         <>
-            {detailTarget && <DetailModal pesanan={detailTarget} onClose={() => setDetailTarget(null)} />}
+            {detailTarget  && <DetailModal  pesanan={detailTarget}  onClose={() => setDetailTarget(null)} />}
             {invoiceTarget && <InvoiceModal pesanan={invoiceTarget} onClose={() => setInvoiceTarget(null)} />}
 
             {/* Header */}
@@ -439,10 +321,10 @@ export default function PesananPage() {
 
             {/* Stat cards */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14, marginBottom: 20 }}>
-                <StatCard icon="📋" value={pesanan.length} label="Total Pesanan" color="#52b788" />
-                <StatCard icon="📦" value={countOf("Diproses")} label="Diproses" color="#f59e0b" />
-                <StatCard icon="🚚" value={countOf("Dikirim")} label="Dikirim" color="#3b82f6" />
-                <StatCard icon="✅" value={countOf("Selesai")} label="Selesai" color="#52b788" />
+                <StatCard icon="📋" value={pesanan.length}     label="Total Pesanan" color="#52b788" />
+                <StatCard icon="📦" value={countOf("Diproses")} label="Diproses"     color="#f59e0b" />
+                <StatCard icon="🚚" value={countOf("Dikirim")}  label="Dikirim"      color="#3b82f6" />
+                <StatCard icon="✅" value={countOf("Selesai")}  label="Selesai"      color="#52b788" />
             </div>
 
             {/* Search + Filter */}
@@ -483,12 +365,9 @@ export default function PesananPage() {
                                     </td>
                                 </tr>
                             ) : paginated.map((p, idx) => {
-                                const namaPelanggan = getNamaPelanggan(p);
-                                const ac = avatarColor(namaPelanggan);
-                                const ini = namaPelanggan.charAt(0).toUpperCase() || "?";
-                                const statusVal = getStatus(p);
-                                const statusStyle = STATUS_STYLE[statusVal] ?? STATUS_STYLE["Diproses"];
-
+                                const ac  = avatarColor(p.pembeli?.nama_pembeli ?? "");
+                                const ini = p.pembeli?.nama_pembeli?.charAt(0).toUpperCase() ?? "?";
+                                const statusKey = p.status_pesanan as StatusPesanan;
                                 return (
                                     <tr key={p.id_pesanan}
                                         style={{ background: idx % 2 === 0 ? "#fff" : "#f9fdfa", transition: "background 0.15s" }}
@@ -504,31 +383,31 @@ export default function PesananPage() {
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: ac, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{ini}</div>
-                                                <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}>{namaPelanggan}</span>
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}>{p.pembeli?.nama_pembeli ?? "-"}</span>
                                             </div>
                                         </td>
 
                                         {/* Nama Produk */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
-                                            {getNamaProduk(p)}
+                                            {p.detail_pesanan?.[0]?.produk?.name ?? "-"}
                                         </td>
 
-                                        {/* Total Produk (qty) */}
+                                        {/* Total Produk */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, textAlign: "center" }}>
-                                            {getQty(p)} pcs
+                                            {p.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0} pcs
                                         </td>
 
                                         {/* Total Harga */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, whiteSpace: "nowrap" }}>
-                                            {formatRp(getTotalHarga(p))}
+                                            {formatRp(p.total_harga)}
                                         </td>
 
                                         {/* Status */}
                                         <td style={{ padding: "10px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <select
-                                                value={statusVal}
+                                                value={p.status_pesanan}
                                                 onChange={e => updateStatus(p.id_pesanan, e.target.value as StatusPesanan)}
-                                                style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: `1.5px solid ${statusStyle.dot}`, background: statusStyle.bg, color: statusStyle.color, cursor: "pointer", outline: "none", fontFamily: "'Poppins', sans-serif", appearance: "auto" }}
+                                                style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, border: `1.5px solid ${STATUS_STYLE[statusKey]?.dot ?? "#999"}`, background: STATUS_STYLE[statusKey]?.bg ?? "#eee", color: STATUS_STYLE[statusKey]?.color ?? "#666", cursor: "pointer", outline: "none", fontFamily: "'Poppins', sans-serif", appearance: "auto" }}
                                             >
                                                 <option value="Diproses">Diproses</option>
                                                 <option value="Dikirim">Dikirim</option>
@@ -538,7 +417,7 @@ export default function PesananPage() {
 
                                         {/* Tanggal */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 12, color: "#9ca3af", whiteSpace: "nowrap" }}>
-                                            {formatTanggal(p.tanggal_pesanan)}
+                                            {new Date(p.tanggal_pesanan).toLocaleDateString("id-ID")}
                                         </td>
 
                                         {/* Invoice */}
@@ -573,7 +452,7 @@ export default function PesananPage() {
                     </table>
                 </div>
 
-                {/* Footer */}
+                {/* Footer + Pagination */}
                 <div style={{ padding: "13px 18px", borderTop: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9fdfa", flexWrap: "wrap", gap: 8 }}>
                     <span style={{ fontSize: 12, color: "#9ca3af" }}>Menampilkan {paginated.length} dari {filtered.length} pesanan</span>
                     {totalPages > 1 && (

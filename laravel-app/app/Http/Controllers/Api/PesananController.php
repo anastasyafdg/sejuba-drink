@@ -125,4 +125,27 @@ public function riwayatPembeli($id)
         'data' => $pesanan
     ]);
 }
+
+public function updateStatus(Request $request, $id)
+{
+    $pesanan = Pesanan::find($id);
+
+    if (!$pesanan) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Pesanan tidak ditemukan'
+        ], 404);
+    }
+
+    $pesanan->status_pesanan =
+        $request->input('status_pesanan');
+
+    $pesanan->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Status berhasil diperbarui',
+        'data' => $pesanan
+    ]);
+}
 }
