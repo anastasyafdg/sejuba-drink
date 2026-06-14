@@ -91,7 +91,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         } else {
             setPenjual(storedPenjual);
         }
-    }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleLogout = () => {
         // Hapus localStorage + cookie sekaligus

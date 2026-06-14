@@ -42,10 +42,10 @@ interface ApiPesanan {
 }
 
 /* ── Design Tokens ── */
-const P      = "#52b788";
-const DK     = "#1b4332";
+const P = "#52b788";
+const DK = "#1b4332";
 const BORDER = "rgba(82,183,136,0.15)";
-const CARD   = "0 2px 16px rgba(27,67,50,0.07)";
+const CARD = "0 2px 16px rgba(27,67,50,0.07)";
 
 /* ── Helpers ── */
 function formatRp(n: number) {
@@ -54,8 +54,8 @@ function formatRp(n: number) {
 
 const STATUS_STYLE: Record<StatusPesanan, { bg: string; color: string; dot: string }> = {
     Diproses: { bg: "rgba(245,158,11,0.12)", color: "#b45309", dot: "#f59e0b" },
-    Dikirim:  { bg: "rgba(59,130,246,0.1)",  color: "#1d4ed8", dot: "#3b82f6" },
-    Selesai:  { bg: "rgba(82,183,136,0.12)", color: "#1b7a4a", dot: "#52b788" },
+    Dikirim: { bg: "rgba(59,130,246,0.1)", color: "#1d4ed8", dot: "#3b82f6" },
+    Selesai: { bg: "rgba(82,183,136,0.12)", color: "#1b7a4a", dot: "#52b788" },
 };
 
 const AVATAR_COLORS = ["#52b788", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
@@ -77,11 +77,11 @@ function RowInfo({ label, value }: { label: string; value: React.ReactNode }) {
 
 /* ── Detail Modal ── */
 function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal       = pesanan.total_harga;
-    const namaPelanggan  = pesanan.pembeli?.nama_pembeli ?? "-";
-    const noHp           = pesanan.pembeli?.no_telepon ?? "-";
-    const namaProduk     = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
-    const totalQty       = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0;
+    const subTotal = pesanan.total_harga;
+    const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
+    const noHp = pesanan.pembeli?.no_telepon ?? "-";
+    const namaProduk = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
+    const totalQty = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0;
 
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -95,9 +95,9 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
                 {/* Informasi Pesanan */}
                 <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
-                    <RowInfo label="Pelanggan"    value={namaPelanggan} />
-                    <RowInfo label="No. HP"       value={noHp} />
-                    <RowInfo label="Alamat"       value={pesanan.alamat_pengiriman || "-"} />
+                    <RowInfo label="Pelanggan" value={namaPelanggan} />
+                    <RowInfo label="No. HP" value={noHp} />
+                    <RowInfo label="Alamat" value={pesanan.alamat_pengiriman || "-"} />
                     <RowInfo label="Tanggal Pesan" value={new Date(pesanan.tanggal_pesanan).toLocaleDateString("id-ID")} />
                 </div>
 
@@ -129,11 +129,11 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
 
 /* ── Invoice Modal ── */
 function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal      = pesanan.total_harga;
+    const subTotal = pesanan.total_harga;
     const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
-    const noHp          = pesanan.pembeli?.no_telepon ?? "-";
-    const namaProduk    = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
-    const totalQty      = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0;
+    const noHp = pesanan.pembeli?.no_telepon ?? "-";
+    const namaProduk = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
+    const totalQty = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.jumlah, 0) ?? 0;
 
     const handlePrint = () => {
         const el = document.getElementById("invoice-print-area");
@@ -172,9 +172,9 @@ function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =
                     {/* Informasi Pesanan */}
                     <div style={{ border: "1px solid #f3f4f6", borderRadius: 12, padding: "20px 20px 6px 20px", marginBottom: 16 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 18px 0" }}>Informasi Pesanan</h3>
-                        <RowInfo label="Pelanggan"     value={namaPelanggan} />
-                        <RowInfo label="No. HP"        value={noHp} />
-                        <RowInfo label="Alamat"        value={pesanan.alamat_pengiriman || "-"} />
+                        <RowInfo label="Pelanggan" value={namaPelanggan} />
+                        <RowInfo label="No. HP" value={noHp} />
+                        <RowInfo label="Alamat" value={pesanan.alamat_pengiriman || "-"} />
                         <RowInfo label="Tanggal Pesan" value={new Date(pesanan.tanggal_pesanan).toLocaleDateString("id-ID")} />
                     </div>
 
@@ -242,12 +242,12 @@ function FilterBtn({ label, active, onClick }: { label: string; active: boolean;
 
 /* ── Main Page ── */
 export default function PesananPage() {
-    const [pesanan, setPesanan]           = useState<ApiPesanan[]>([]);
-    const [search, setSearch]             = useState("");
+    const [pesanan, setPesanan] = useState<ApiPesanan[]>([]);
+    const [search, setSearch] = useState("");
     const [activeStatus, setActiveStatus] = useState<"Semua" | StatusPesanan>("Semua");
     const [detailTarget, setDetailTarget] = useState<ApiPesanan | null>(null);
     const [invoiceTarget, setInvoiceTarget] = useState<ApiPesanan | null>(null);
-    const [page, setPage]                 = useState(1);
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         const loadPesanan = async () => {
@@ -283,7 +283,7 @@ export default function PesananPage() {
     const filtered = useMemo(() => {
         return pesanan.filter(p => {
             const namaPembeli = p.pembeli?.nama_pembeli ?? "";
-            const namaProduk  = p.detail_pesanan?.[0]?.produk?.name ?? "";
+            const namaProduk = p.detail_pesanan?.[0]?.produk?.name ?? "";
             return (
                 (activeStatus === "Semua" || p.status_pesanan === activeStatus) &&
                 (
@@ -298,17 +298,17 @@ export default function PesananPage() {
     const totalPendapatan = pesanan.reduce((s, p) => s + p.total_harga, 0);
     const countOf = (s: StatusPesanan) => pesanan.filter(p => p.status_pesanan === s).length;
 
-    const PER_PAGE   = 10;
+    const PER_PAGE = 10;
     const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-    const safePage   = Math.min(page, totalPages);
-    const paginated  = useMemo(() =>
+    const safePage = Math.min(page, totalPages);
+    const paginated = useMemo(() =>
         filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
         [filtered, safePage]
     );
 
     return (
         <>
-            {detailTarget  && <DetailModal  pesanan={detailTarget}  onClose={() => setDetailTarget(null)} />}
+            {detailTarget && <DetailModal pesanan={detailTarget} onClose={() => setDetailTarget(null)} />}
             {invoiceTarget && <InvoiceModal pesanan={invoiceTarget} onClose={() => setInvoiceTarget(null)} />}
 
             {/* Header */}
@@ -321,10 +321,10 @@ export default function PesananPage() {
 
             {/* Stat cards */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14, marginBottom: 20 }}>
-                <StatCard icon="📋" value={pesanan.length}     label="Total Pesanan" color="#52b788" />
-                <StatCard icon="📦" value={countOf("Diproses")} label="Diproses"     color="#f59e0b" />
-                <StatCard icon="🚚" value={countOf("Dikirim")}  label="Dikirim"      color="#3b82f6" />
-                <StatCard icon="✅" value={countOf("Selesai")}  label="Selesai"      color="#52b788" />
+                <StatCard icon="📋" value={pesanan.length} label="Total Pesanan" color="#52b788" />
+                <StatCard icon="📦" value={countOf("Diproses")} label="Diproses" color="#f59e0b" />
+                <StatCard icon="🚚" value={countOf("Dikirim")} label="Dikirim" color="#3b82f6" />
+                <StatCard icon="✅" value={countOf("Selesai")} label="Selesai" color="#52b788" />
             </div>
 
             {/* Search + Filter */}
@@ -365,7 +365,7 @@ export default function PesananPage() {
                                     </td>
                                 </tr>
                             ) : paginated.map((p, idx) => {
-                                const ac  = avatarColor(p.pembeli?.nama_pembeli ?? "");
+                                const ac = avatarColor(p.pembeli?.nama_pembeli ?? "");
                                 const ini = p.pembeli?.nama_pembeli?.charAt(0).toUpperCase() ?? "?";
                                 const statusKey = p.status_pesanan as StatusPesanan;
                                 return (
