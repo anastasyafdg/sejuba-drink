@@ -148,6 +148,7 @@ export default function ProductSwitcher({ search = "" }: Props) {
         </div>
 
         {/* GAMBAR (FOKUS UTAMA) */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={current.image}
           alt={current.name}

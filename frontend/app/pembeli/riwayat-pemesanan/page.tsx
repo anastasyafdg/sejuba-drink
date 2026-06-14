@@ -12,10 +12,23 @@ const tabs = [
   "Selesai",
 ];
 
+interface OrderItem {
+  id_pesanan: number;
+  status_pesanan: string;
+  total_harga: number;
+  detail_pesanan: {
+    ukuran: string;
+    produk: {
+      name: string;
+      image: string;
+    };
+  }[];
+}
+
 export default function RiwayatPemesananPage() {
 
   const [activeTab, setActiveTab] = useState("Semua");
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<OrderItem[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -56,7 +69,7 @@ export default function RiwayatPemesananPage() {
     activeTab === "Semua"
       ? orders
       : orders.filter(
-        (order: any) =>
+        (order: OrderItem) =>
           order.status_pesanan === activeTab
       );
 
@@ -108,7 +121,7 @@ export default function RiwayatPemesananPage() {
 
           ) : (
 
-            filteredOrders.map((order: any) => (
+            filteredOrders.map((order: OrderItem) => (
               <div
                 key={order.id_pesanan}
                 className="border border-gray-300 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
@@ -116,6 +129,7 @@ export default function RiwayatPemesananPage() {
                 {/* Left Side: Product Info */}
                 <div className="flex items-center gap-6">
                   <div className="bg-[#E5EFE7] w-24 h-24 rounded-lg flex items-center justify-center shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`http://127.0.0.1:8000/storage/${order.detail_pesanan?.[0]?.produk?.image}`}
                       alt={order.detail_pesanan?.[0]?.produk?.name || "Produk"}

@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import ProductCard from "@/components/pembeli/ProductCard";
 import ProductModal from "@/components/pembeli/ProductModal";
 import CartSidebar from "@/components/pembeli/CartSidebar";
-import LoginRequiredModal from "@/components/pembeli/LoginRequiredModal";
 
 interface Product {
   id: number;
@@ -24,13 +23,31 @@ interface Product {
   stock_250: number;
 }
 
+interface FormattedProduct {
+  id: number;
+  name: string;
+  image: string;
+  bg: string;
+  category: string;
+  sizes: { label: string; price: number }[];
+}
+
+interface CartItem {
+  id: number;
+  name: string;
+  image: string;
+  price: number;
+  size: string;
+  qty: number;
+}
+
 export default function PemesananPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
 
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<FormattedProduct | null>(null);
 
-  const [cart, setCart] = useState<any[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const [open, setOpen] = useState(false);
 
@@ -40,8 +57,21 @@ export default function PemesananPage() {
 
   const [loading, setLoading] = useState(true);
 
-  // Auth guard modal
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  // ================= RESTORE PENDING CART SETELAH LOGIN =================
+  useEffect(() => {
+    try {
+      const pendingCart = sessionStorage.getItem("sejuba_pending_cart");
+      if (pendingCart) {
+        const parsed = JSON.parse(pendingCart);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCart(parsed);
+          sessionStorage.removeItem("sejuba_pending_cart");
+          // Auto-buka sidebar keranjang agar user sadar cartnya ter-restore
+          setOpen(true);
+        }
+      }
+    } catch {}
+  }, []);
 
   // ================= RESTORE PENDING CART SETELAH LOGIN =================
   useEffect(() => {
@@ -195,7 +225,7 @@ export default function PemesananPage() {
                 <ProductCard
                   key={p.id}
                   product={p}
-                  onClick={setSelected}
+                  onClick={(prod) => setSelected(prod as FormattedProduct)}
                 />
 
               ))
@@ -212,9 +242,19 @@ export default function PemesananPage() {
             product={selected}
             onClose={() => setSelected(null)}
 
-            onAdd={(item: any) => {
+            onAdd={(item) => {
+              // item dari ProductModal: { ...product, ...size(label,price), qty }
+              // label (misal "250 ml") adalah ukuran yang dipilih
+              const cartItem: CartItem = {
+                id: item.id,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+                size: item.label ?? "",
+                qty: item.qty,
+              };
 
-              setCart((prev) => [...prev, item]);
+              setCart((prev) => [...prev, cartItem]);
 
               setAnimateCart(true);
 
@@ -233,7 +273,6 @@ export default function PemesananPage() {
           setOpen={setOpen}
           cart={cart}
           setCart={setCart}
-          onLoginRequired={() => setShowLoginModal(true)}
         />
 
       </section>
@@ -245,13 +284,6 @@ export default function PemesananPage() {
         </div>
       )}
 
-      {/* ================= LOGIN REQUIRED MODAL ================= */}
-      {showLoginModal && (
-        <LoginRequiredModal
-          onClose={() => setShowLoginModal(false)}
-          fromPath="/pembeli/pemesanan"
-        />
-      )}
 
       {/* ================= CARA PEMESANAN ================= */}
       <div className="bg-[#6FAE54] py-24 mb-32">

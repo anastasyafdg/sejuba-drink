@@ -1,24 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 /* ── Types ── */
-interface Pelanggan {
-    id: string;
+interface Pembeli {
+    id: number;
     nama: string;
-    telepon: string;
     email: string;
+    no_telepon: string;
+    total_pesanan: number;
 }
-
-/* ── Dummy Data ── */
-const INITIAL_PELANGGAN: Pelanggan[] = [
-    { id: "PLG-001", nama: "Ameylia", telepon: "081234567890", email: "ameylia@yahoo.com" },
-    { id: "PLG-002", nama: "Saskia",  telepon: "082345678901", email: "saskia@gmail.com"  },
-    { id: "PLG-003", nama: "Jena",    telepon: "083456789012", email: "jena@yahoo.com"    },
-    { id: "PLG-004", nama: "Windy",   telepon: "084567890123", email: "windy@gmail.com"   },
-    { id: "PLG-005", nama: "Upay",    telepon: "085678901234", email: "upay@gmail.com"    },
-    { id: "PLG-006", nama: "Grace",   telepon: "086789012345", email: "grace@gmail.com"   },
-];
 
 /* ── Design Tokens ── */
 const DK     = "#1b4332";
@@ -45,33 +36,75 @@ function StatCard({ icon, value, label, color }: { icon: string; value: number; 
     );
 }
 
+/* ── Skeleton Row ── */
+function SkeletonRow() {
+    return (
+        <tr>
+            {[70, 180, 160, 130].map((w, i) => (
+                <td key={i} style={{ padding: "14px 16px", borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ height: 14, width: w, borderRadius: 6, background: "linear-gradient(90deg,#e9f5ee 25%,#d1ead9 50%,#e9f5ee 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s infinite" }} />
+                </td>
+            ))}
+        </tr>
+    );
+}
+
 /* ── Main Page ── */
 export default function PelangganPage() {
-    const pelanggan = INITIAL_PELANGGAN;
-    const [search, setSearch] = useState("");
+    const [pembeli, setPembeli] = useState<Pembeli[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError]     = useState<string | null>(null);
+    const [search, setSearch]   = useState("");
+
+    useEffect(() => {
+        fetch("http://127.0.0.1:8000/api/penjual/pembeli")
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(json => {
+                if (json.success) setPembeli(json.data);
+                else throw new Error("Response tidak berhasil");
+            })
+            .catch(err => setError(err.message))
+            .finally(() => setLoading(false));
+    }, []);
 
     const filtered = useMemo(() =>
-        pelanggan.filter(p =>
+        pembeli.filter(p =>
             p.nama.toLowerCase().includes(search.toLowerCase()) ||
             p.email.toLowerCase().includes(search.toLowerCase()) ||
-            p.telepon.includes(search) ||
-            p.id.toLowerCase().includes(search.toLowerCase())
-        ), [pelanggan, search]);
+            p.no_telepon.includes(search)
+        ), [pembeli, search]);
 
     return (
         <>
+            <style>{`
+                @keyframes shimmer {
+                    0%   { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+            `}</style>
+
             {/* Header */}
             <div style={{ marginBottom: 22 }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Pelanggan</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: DK, margin: 0 }}>Manajemen Pembeli</h2>
                 <p style={{ fontSize: 13, color: "#74a78a", margin: "4px 0 0", fontWeight: 500 }}>
-                    {pelanggan.length} pelanggan terdaftar
+                    {loading ? "Memuat data..." : `${pembeli.length} pembeli terdaftar`}
                 </p>
             </div>
 
             {/* Stat Cards */}
             <div style={{ display: "flex", gap: 14, marginBottom: 20, flexWrap: "wrap" }}>
-                <StatCard icon="👥" value={pelanggan.length} label="Total Pelanggan" color="#52b788" />
+                <StatCard icon="👥" value={pembeli.length} label="Total Pembeli" color="#52b788" />
             </div>
+
+            {/* Error Banner */}
+            {error && (
+                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "12px 16px", marginBottom: 18, color: "#dc2626", fontSize: 13 }}>
+                    ⚠️ Gagal memuat data pembeli: <strong>{error}</strong>
+                </div>
+            )}
 
             {/* Search */}
             <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${BORDER}`, boxShadow: CARD, padding: "12px 16px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
@@ -93,16 +126,18 @@ export default function PelangganPage() {
                     <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
                         <thead>
                             <tr style={{ background: `linear-gradient(90deg, ${DK}, #2d6a4f)` }}>
-                                {["ID", "Nama Pelanggan", "No. Telepon", "Email"].map(h => (
+                                {["ID", "Nama Pembeli", "Email", "No. Telepon"].map(h => (
                                     <th key={h} style={{ padding: "13px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {filtered.length === 0 ? (
+                            {loading ? (
+                                [1,2,3,4].map(i => <SkeletonRow key={i} />)
+                            ) : filtered.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} style={{ padding: 48, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
-                                        👥 Tidak ada pelanggan ditemukan
+                                        👥 Tidak ada pembeli ditemukan
                                     </td>
                                 </tr>
                             ) : filtered.map((p, idx) => {
@@ -116,10 +151,10 @@ export default function PelangganPage() {
                                     >
                                         {/* ID */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
-                                            <span style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", fontFamily: "'Poppins', sans-serif" }}>{p.id}</span>
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", fontFamily: "'Poppins', sans-serif" }}>#{p.id}</span>
                                         </td>
 
-                                        {/* Nama */}
+                                        {/* Nama Pembeli */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}` }}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: ac, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0 }}>
@@ -129,14 +164,14 @@ export default function PelangganPage() {
                                             </div>
                                         </td>
 
-                                        {/* No. Telepon */}
-                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#374151", whiteSpace: "nowrap" }}>
-                                            {p.telepon}
-                                        </td>
-
                                         {/* Email */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 12, color: "#6b7280", whiteSpace: "nowrap" }}>
                                             {p.email}
+                                        </td>
+
+                                        {/* No. Telepon */}
+                                        <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: "#374151", whiteSpace: "nowrap" }}>
+                                            {p.no_telepon || "-"}
                                         </td>
                                     </tr>
                                 );
@@ -147,7 +182,9 @@ export default function PelangganPage() {
 
                 {/* Footer */}
                 <div style={{ padding: "13px 18px", borderTop: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9fdfa" }}>
-                    <span style={{ fontSize: 12, color: "#9ca3af" }}>Menampilkan {filtered.length} dari {pelanggan.length} pelanggan</span>
+                    <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                        {loading ? "Memuat..." : `Menampilkan ${filtered.length} dari ${pembeli.length} pembeli`}
+                    </span>
                 </div>
             </div>
         </>

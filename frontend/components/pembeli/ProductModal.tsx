@@ -123,58 +123,6 @@ export default function ProductModal({ product, onClose, onAdd }: Props) {
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
-=======
-
-            {/* QTY + BUTTON */}
-            <div className="flex items-center justify-center gap-5 mt-8">
-
-              {/* MINUS */}
-              <button
-                onClick={() => setQty(Math.max(1, qty - 1))}
-                className="w-9 h-9 border rounded-md flex items-center justify-center"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  remove
-                </span>
-              </button>
-
-              {/* QTY */}
-              <span className="text-base font-medium">{qty}</span>
-
-              {/* PLUS */}
-              <button
-                onClick={() => setQty(qty + 1)}
-                className="w-9 h-9 border rounded-md flex items-center justify-center"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  add
-                </span>
-              </button>
-
-              {/* BUTTON */}
-              <button
-                onClick={() => {
-                  onAdd({
-                    ...product,
-                    size: size.label,
-                    price: size.price,
-                    qty,
-                  });
-                  onClose();
-                }}
-                className="ml-4 flex items-center gap-2 border border-orange-500 text-orange-500 px-5 py-2 rounded-lg hover:bg-orange-50 transition"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  shopping_cart
-                </span>
-                Masukan Keranjang
-              </button>
-
-            </div>
-
-          </div>
->>>>>>> 6cc6feb80e3304da685912dc041706f610de14ff
         </div>
     );
 }

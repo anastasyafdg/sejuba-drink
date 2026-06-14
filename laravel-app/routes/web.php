@@ -2,9 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PenjualAuthController;
+use App\Http\Controllers\Api\PembeliController;
 
 // API route untuk Next.js (bebas CSRF)
 Route::post('/api/penjual/login', [PenjualAuthController::class , 'loginApi'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::get('/api/penjual/pembeli', [PembeliController::class, 'index'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 

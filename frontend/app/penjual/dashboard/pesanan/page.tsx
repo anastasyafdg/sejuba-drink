@@ -16,7 +16,7 @@ interface ApiDetailPesanan {
     produk?: {
         id: number;
         name: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 }
 
@@ -25,7 +25,7 @@ interface ApiPembeli {
     nama_pembeli: string;
     email: string;
     no_telepon: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 interface ApiPesanan {
@@ -38,7 +38,7 @@ interface ApiPesanan {
     status_pesanan: string;
     pembeli?: ApiPembeli;
     detail_pesanan?: ApiDetailPesanan[];
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /* ── Helpers ── */
@@ -107,18 +107,21 @@ function getStatus(p: ApiPesanan): StatusPesanan {
     return "Diproses";
 }
 
-/* ── Detail Modal ── */
-function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = getTotalHarga(pesanan);
-    const ongkir = getOngkir(pesanan);
-    const grandTotal = subTotal + ongkir;
-
-    const RowInfo = ({ label, value }: { label: string; value: React.ReactNode }) => (
+/* ── Row Info Helper Component (module-level agar tidak create component setiap render) ── */
+function RowInfo({ label, value }: { label: string; value: React.ReactNode }) {
+    return (
         <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
             <span style={{ fontSize: 13, color: "#6b7280", width: 140, flexShrink: 0 }}>{label}</span>
             <span style={{ fontSize: 13, color: "#111827", fontWeight: 500, lineHeight: 1.4 }}>{value}</span>
         </div>
     );
+}
+
+/* ── Detail Modal ── */
+function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
+    const subTotal = getTotalHarga(pesanan);
+    const ongkir = getOngkir(pesanan);
+    const grandTotal = subTotal + ongkir;
 
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -350,6 +353,7 @@ export default function PesananPage() {
     const [activeStatus, setActiveStatus] = useState<"Semua" | StatusPesanan>("Semua");
     const [detailTarget, setDetailTarget] = useState<ApiPesanan | null>(null);
     const [invoiceTarget, setInvoiceTarget] = useState<ApiPesanan | null>(null);
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         const loadPesanan = async () => {
@@ -412,7 +416,6 @@ export default function PesananPage() {
     const countOf = (s: StatusPesanan) =>
         pesanan.filter(p => p.status_pesanan === s).length;
 
-    const [page, setPage] = useState(1);
     const PER_PAGE = 10;
     const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
     const safePage = Math.min(page, totalPages);

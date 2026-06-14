@@ -21,6 +21,7 @@ function CartItem({ item }: { item: CartItemData }) {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
             }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.image} alt={item.name} style={{ width: 50, height: 50, objectFit: "contain" }} />
             </div>
 

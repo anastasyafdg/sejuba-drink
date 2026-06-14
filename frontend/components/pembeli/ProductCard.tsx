@@ -1,4 +1,14 @@
-export default function ProductCard({ product, onClick }: any) {
+interface ProductCardProps {
+  product: {
+    name: string;
+    image: string;
+    bg: string;
+    sizes?: { label: string; price: number }[];
+  };
+  onClick: (product: ProductCardProps["product"]) => void;
+}
+
+export default function ProductCard({ product, onClick }: ProductCardProps) {
   return (
     <div className="group flex flex-col items-center">
       
@@ -16,8 +26,10 @@ export default function ProductCard({ product, onClick }: any) {
         }}
       >
         {/* IMAGE */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={product.image}
+          alt={product.name}
           className="w-[115px] transition-all duration-300 group-hover:scale-110"
         />
       </div>
@@ -45,4 +57,4 @@ export default function ProductCard({ product, onClick }: any) {
       </div>
     </div>
   );
-}
+}

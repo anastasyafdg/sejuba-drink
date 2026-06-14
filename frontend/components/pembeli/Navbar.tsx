@@ -20,17 +20,17 @@ export default function NavbarPembeli() {
   const isLoginPage = pathname === "/pembeli/login" || pathname === "/pembeli/register";
 
   const [search, setSearch] = useState("");
-<<<<<<< HEAD
-=======
-
-  // Mock login state for demonstration
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
->>>>>>> 6cc6feb80e3304da685912dc041706f610de14ff
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Auth state dari Context (real, bukan hardcoded)
+  // Auth state dari Context
   const { isLoggedIn, pembeli, logout } = useAuth();
+
+  // Set mounted setelah hydration selesai
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -43,14 +43,6 @@ export default function NavbarPembeli() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-  useEffect(() => {
-    const pembeli = localStorage.getItem("pembeli");
-
-    if (pembeli) {
-      setIsLoggedIn(true);
-    }
   }, []);
 
   if (isLoginPage) return null;
@@ -114,8 +106,11 @@ export default function NavbarPembeli() {
             })}
           </nav>
 
-          {/* USER ICON */}
-          {isLoggedIn ? (
+          {/* USER ICON — render setelah mounted agar tidak hydration mismatch */}
+          {!mounted ? (
+            // Placeholder yang sama antara server & client
+            <div className="w-10 h-10 rounded-full border-2 border-gray-300 bg-gray-100 shrink-0" />
+          ) : isLoggedIn ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -166,17 +161,7 @@ export default function NavbarPembeli() {
                   </Link>
                   <div className="border-t border-gray-200 my-1"></div>
                   <button
-<<<<<<< HEAD
                     onClick={handleLogout}
-=======
-                    onClick={() => {
-                      localStorage.removeItem("pembeli");
-                      setIsLoggedIn(false);
-                      setIsDropdownOpen(false);
-
-                      window.location.href = "/pembeli";
-                    }}
->>>>>>> 6cc6feb80e3304da685912dc041706f610de14ff
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
                     Keluar

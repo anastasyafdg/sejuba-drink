@@ -1,11 +1,28 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
+
+interface DetailItem {
+    subtotal: number;
+    harga_satuan: number;
+    jumlah: number;
+    ukuran: string;
+    produk: {
+        name: string;
+        image: string;
+    };
+}
+
+interface PesananData {
+    id_pesanan: number;
+    status_pesanan: string;
+    status_pembayaran: string;
+    detail_pesanan: DetailItem[];
+}
 
 export default function StatusPesananPage() {
 
-    const [pesanan, setPesanan] = useState<any>(null);
+    const [pesanan, setPesanan] = useState<PesananData | null>(null);
     useEffect(() => {
 
         const loadPesanan = async () => {
@@ -48,7 +65,7 @@ export default function StatusPesananPage() {
     const ongkir = 5000;
 
     const subtotal = items.reduce(
-        (acc: number, item: any) =>
+        (acc: number, item: DetailItem) =>
             acc + item.subtotal,
         0
     );
@@ -288,7 +305,7 @@ export default function StatusPesananPage() {
                         <div className="bg-white px-6 py-4">
                             <div className="flex flex-col">
 
-                                {items.map((item: any, index: number) => (
+                                {items.map((item: DetailItem, index: number) => (
                                     <div
                                         key={index}
                                         className={`py-4 ${index !== 0 ? "border-t border-gray-200" : ""}`}
@@ -296,6 +313,7 @@ export default function StatusPesananPage() {
                                         <div className="flex items-start gap-6">
 
                                             <div className="w-20 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center p-2">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img
                                                     src={`http://127.0.0.1:8000/storage/${item.produk?.image}`}
                                                     alt={item.produk?.name}

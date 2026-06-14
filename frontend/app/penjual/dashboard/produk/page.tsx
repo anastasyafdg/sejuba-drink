@@ -407,6 +407,7 @@ function ProductModal({
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
 
         if (initial) {
@@ -994,6 +995,7 @@ export default function ProdukPage() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         fetchProducts();
     }, []);
 

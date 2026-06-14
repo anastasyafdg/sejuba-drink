@@ -48,6 +48,12 @@ class PesananController extends Controller
         ]);
 
         foreach ($request->items as $item) {
+            if (empty($item['id'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ID produk tidak valid pada item: ' . ($item['name'] ?? 'unknown'),
+                ], 422);
+            }
 
             DetailPesanan::create([
                 'id_pesanan' => $pesanan->id_pesanan,

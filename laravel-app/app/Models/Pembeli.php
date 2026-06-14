@@ -32,7 +32,16 @@ class Pembeli extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
+    }
+
+    public function pesanan()
+    {
+        return $this->hasMany(
+            Pesanan::class,
+            'id_pembeli',
+            'id_pembeli'
+        );
     }
 }

@@ -56,11 +56,6 @@ function LoginForm() {
             // Kembali ke halaman asal
             router.push(from);
 
-            localStorage.setItem("pembeli", JSON.stringify(data.data));
-
-            window.location.href = "/pembeli";
-
-
         } catch {
             setError("Tidak dapat terhubung ke server. Pastikan backend berjalan.");
         } finally {

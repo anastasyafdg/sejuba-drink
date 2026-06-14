@@ -1,11 +1,24 @@
-export default function CartItem({ item, onRemove }: any) {
+interface CartItemProps {
+  item: {
+    name: string;
+    image: string;
+    price: number;
+    size: string;
+    qty: number;
+  };
+  onRemove: () => void;
+}
+
+export default function CartItem({ item, onRemove }: CartItemProps) {
   return (
     <div className="flex items-center justify-between gap-3">
 
       {/* LEFT */}
       <div className="flex gap-3 items-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.image}
+          alt={item.name}
           className="w-16 h-16 rounded-xl bg-[#E5EFE7]"
         />
 
@@ -33,4 +46,4 @@ export default function CartItem({ item, onRemove }: any) {
       </button>
     </div>
   );
-}
+}

@@ -24,7 +24,12 @@ const products = [
     },
 ];
 
-export default function ReviewModal({ open, setOpen }: any) {
+interface ReviewModalProps {
+    open: boolean;
+    setOpen: (v: boolean) => void;
+}
+
+export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [selectedProduct, setSelectedProduct] = useState(products[0]);

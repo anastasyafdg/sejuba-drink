@@ -4,7 +4,6 @@ import {
     createContext,
     useContext,
     useState,
-    useEffect,
     useCallback,
     ReactNode,
 } from "react";
@@ -42,13 +41,10 @@ const AuthContext = createContext<AuthContextValue>({
 // ============================================================
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [pembeli, setPembeli] = useState<PembeliSession | null>(null);
-
-    // Hydrate dari localStorage saat mount (client-only)
-    useEffect(() => {
-        const session = getPembeliSession();
-        if (session) setPembeli(session);
-    }, []);
+    const [pembeli, setPembeli] = useState<PembeliSession | null>(() => {
+        if (typeof window === "undefined") return null;
+        return getPembeliSession();
+    });
 
     const login = useCallback((data: PembeliSession) => {
         setPembeliSession(data);

@@ -45,44 +45,35 @@ export default function Pemesanan2Page() {
             const stored = sessionStorage.getItem("sejuba_cart");
 
             if (stored) {
-                setCart(JSON.parse(stored));
-                return;
+                const parsed = JSON.parse(stored);
+
+                // Validasi: semua item harus punya id produk
+                const valid = Array.isArray(parsed)
+                    ? parsed.filter((item: CartItem) => item.id && item.name)
+                    : [];
+
+                if (valid.length > 0) {
+                    setCart(valid);
+                    return;
+                } else {
+                    // Cart lama/invalid — hapus dan redirect
+                    sessionStorage.removeItem("sejuba_cart");
+                    sessionStorage.removeItem("sejuba_pending_cart");
+                    router.replace("/pembeli/pemesanan");
+                    return;
+                }
             }
         } catch { }
 
-        // Demo fallback
-        setCart([
-            {
-                id: 3,
-                name: "Purple Lime",
-                image: "/images/produk/purple.png",
-                price: 10000,
-                qty: 4,
-                size: "250 ml",
-            },
-            {
-                id: 4,
-                name: "Blue Lime",
-                image: "/images/produk/blue.png",
-                price: 10000,
-                qty: 1,
-                size: "250 ml",
-            },
-            {
-                id: 5,
-                name: "Green Series",
-                image: "/images/produk/green.png",
-                price: 13000,
-                qty: 2,
-                size: "250 ml",
-            },
-        ]);
-    }, []);
+        // Tidak ada cart → kembali ke pemesanan
+        router.replace("/pembeli/pemesanan");
+    }, [router]);
 
     // ── Inisialisasi Leaflet (client-only) ────────────────────────────────────
     useEffect(() => {
         if (typeof window === "undefined") return;
         if (mapInstanceRef.current) return; // sudah init
+        if ((mapContainerRef.current as any)?._leaflet_id) return; // container sudah ada leaflet instance
         if (!mapContainerRef.current) return;
 
         // Leaflet diimport secara dinamis agar tidak error saat SSR
@@ -134,7 +125,7 @@ export default function Pemesanan2Page() {
             };
 
             // Klik peta → pindah marker + isi alamat
-            map.on("click", (e: any) => {
+            map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
                 marker.setLatLng(e.latlng);
                 reverseGeocode(e.latlng.lat, e.latlng.lng);
             });
@@ -181,7 +172,6 @@ export default function Pemesanan2Page() {
 
     const handleBayar = async () => {
         try {
-
             const pembeli = JSON.parse(
                 localStorage.getItem("pembeli") || "{}"
             );
@@ -192,12 +182,23 @@ export default function Pemesanan2Page() {
                 return;
             }
 
+            if (!alamat.trim()) {
+                toast.error("Alamat pengiriman wajib diisi");
+                return;
+            }
+
+            if (cart.length === 0) {
+                toast.error("Keranjang masih kosong");
+                return;
+            }
+
             const response = await fetch(
                 "http://127.0.0.1:8000/api/pesanan",
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Accept": "application/json",
                     },
                     body: JSON.stringify({
                         id_pembeli: pembeli.id_pembeli,
@@ -212,18 +213,23 @@ export default function Pemesanan2Page() {
                 }
             );
 
+            // Cek response.ok DULU sebelum parse JSON
+            if (!response.ok) {
+                const text = await response.text();
+                console.error("API error response:", text);
+                throw new Error("Gagal membuat pesanan (server error)");
+            }
+
             const data = await response.json();
+
+            if (!data?.data?.id_pesanan) {
+                throw new Error(data?.message || "Gagal membuat pesanan");
+            }
 
             sessionStorage.setItem(
                 "id_pesanan",
                 data.data.id_pesanan.toString()
             );
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message || "Gagal membuat pesanan"
-                );
-            }
 
             sessionStorage.setItem(
                 "sejuba_order",
@@ -251,9 +257,10 @@ export default function Pemesanan2Page() {
 
         } catch (error) {
             console.error(error);
-
             toast.error(
-                "Terjadi kesalahan saat membuat pesanan"
+                error instanceof Error
+                    ? error.message
+                    : "Terjadi kesalahan saat membuat pesanan"
             );
         }
     };

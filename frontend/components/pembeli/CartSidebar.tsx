@@ -2,31 +2,41 @@
 
 import CartItem from "./CartItem";
 import { useAuth } from "@/lib/AuthContext";
+import { useRouter } from "next/navigation";
+
+interface CartItemType {
+    id: number;
+    name: string;
+    image: string;
+    price: number;
+    size: string;
+    qty: number;
+}
 
 interface Props {
     open: boolean;
     setOpen: (v: boolean) => void;
-    cart: any[];
-    setCart: (fn: any) => void;
-    onLoginRequired: () => void;
+    cart: CartItemType[];
+    setCart: (fn: (prev: CartItemType[]) => CartItemType[]) => void;
 }
 
-export default function CartSidebar({ open, setOpen, cart, setCart, onLoginRequired }: Props) {
+export default function CartSidebar({ open, setOpen, cart, setCart }: Props) {
     const { isLoggedIn } = useAuth();
+    const router = useRouter();
 
     const total = cart.reduce(
-        (acc: number, item: any) => acc + item.price * item.qty,
+        (acc: number, item: CartItemType) => acc + item.price * item.qty,
         0
     );
 
     const handleBeliSekarang = () => {
         if (!isLoggedIn) {
-            // Simpan cart ke sessionStorage agar bisa di-restore setelah login
+            // Simpan cart agar bisa di-restore setelah login
             try {
                 sessionStorage.setItem("sejuba_pending_cart", JSON.stringify(cart));
             } catch {}
             setOpen(false);
-            onLoginRequired();
+            router.push("/pembeli/login?from=/pembeli/pemesanan");
             return;
         }
 
@@ -62,12 +72,12 @@ export default function CartSidebar({ open, setOpen, cart, setCart, onLoginRequi
                     {cart.length === 0 ? (
                         <p className="text-center text-gray-400">Keranjang kosong</p>
                     ) : (
-                        cart.map((item: any, i: number) => (
+                        cart.map((item: CartItemType, i: number) => (
                             <CartItem
                                 key={i}
                                 item={item}
                                 onRemove={() =>
-                                    setCart((prev: any[]) =>
+                                    setCart((prev: CartItemType[]) =>
                                         prev.filter((_, idx) => idx !== i)
                                     )
                                 }
