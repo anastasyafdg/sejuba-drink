@@ -5,11 +5,10 @@ const PENJUAL_PROTECTED_PREFIX = "/penjual/dashboard";
 const PENJUAL_LOGIN_PATH = "/penjual/login";
 
 // ── Halaman checkout pembeli yang wajib login
-//    (melihat produk di /pembeli/pemesanan tetap bebas, tapi checkout tidak)
 const PEMBELI_PROTECTED_PATHS = ["/pembeli/pemesanan2", "/pembeli/pembayaran", "/pembeli/profil"];
 const PEMBELI_LOGIN_PATH = "/pembeli/login";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── [1] PENJUAL: Proteksi dashboard ─────────────────────────────────────
@@ -34,8 +33,6 @@ export function middleware(request: NextRequest) {
     const session = request.cookies.get("pembeli_session");
 
     if (!session || !session.value) {
-      // Simpan intended destination, redirect kembali ke /pembeli/pemesanan
-      // (bukan ke halaman checkout itu sendiri, agar user tidak bingung)
       const loginUrl = new URL(PEMBELI_LOGIN_PATH, request.url);
       loginUrl.searchParams.set("from", "/pembeli/pemesanan");
       return NextResponse.redirect(loginUrl);
@@ -47,6 +44,8 @@ export function middleware(request: NextRequest) {
   // ── [3] Semua path lain: biarkan lewat ──────────────────────────────────
   return NextResponse.next();
 }
+
+export default proxy;
 
 export const config = {
   matcher: [
