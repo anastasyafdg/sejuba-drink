@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
+import { useSearchParams } from "next/navigation";
 
 const navItems = [
   { name: "Beranda", href: "/pembeli" },
@@ -23,6 +24,15 @@ export default function NavbarPembeli() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const handleSearch = (value: string) => {
+    setSearch(value);
+
+    if (isProdukPage) {
+      router.push(
+        `/pembeli/produk?search=${encodeURIComponent(value)}`
+      );
+    }
+  };
 
   // Auth state dari Context
   const { isLoggedIn, pembeli, logout } = useAuth();
@@ -78,7 +88,7 @@ export default function NavbarPembeli() {
               type="text"
               placeholder="Cari rasa anda"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               className="bg-transparent outline-none w-full text-sm"
             />
           </div>

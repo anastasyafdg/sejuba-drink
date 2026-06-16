@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useAuth } from "@/lib/AuthContext";
 
 interface Product {
     id: number;
@@ -23,6 +24,7 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [ulasan, setUlasan] = useState("");
+    const { pembeli } = useAuth();
 
     useEffect(() => {
 
@@ -58,6 +60,11 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
     const submitUlasan = async () => {
         try {
 
+            if (!pembeli) {
+                toast.error("Silakan login terlebih dahulu");
+                return;
+            }
+
             if (!selectedProduct) {
                 alert("Pilih produk terlebih dahulu");
                 return;
@@ -81,7 +88,7 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        id_pembeli: 2, // sementara dulu
+                        id_pembeli: pembeli?.id_pembeli,
                         id_produk: selectedProduct.id,
                         rating,
                         ulasan,

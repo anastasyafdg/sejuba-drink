@@ -1,9 +1,13 @@
 "use client";
 import { useState } from "react";
 import ProductSwitcher from "@/components/pembeli/ProductSwitcher";
+import { useSearchParams } from "next/navigation";
 
 export default function ProdukPage() {
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+
+  const search =
+    searchParams.get("search") || "";
 
   return (
     <>
@@ -21,20 +25,34 @@ export default function ProdukPage() {
             Produk Sejuba
           </h1>
 
-          <p className="mt-4 text-gray-600">
-            Yuk, Temukan Varian Favoritmu!
-          </p>
+          {search.trim() === "" ? (
+            <p className="mt-4 text-gray-600">
+              Yuk, Temukan Varian Favoritmu!
+            </p>
+          ) : (
+            <p className="mt-4 text-gray-600">
+              Menampilkan hasil untuk:{" "}
+              <span className="font-semibold text-orange-500">
+                "{search}"
+              </span>
+            </p>
+          )}
 
+          {search.trim() === "" && (
+            <>
+              {/* gambar produk */}
+              <div className="mt-8 flex justify-center">
+                <img
+                  src="/images/produk/produk1.1.png"
+                  alt="produk sejuba"
+                  className="w-[600px]"
+                />
+              </div>
 
-          <div className="mt-8 flex justify-center">
-            <img
-              src="/images/produk/produk1.1.png"
-              alt="produk sejuba"
-              className="w-[600px]"
-            />
-          </div>
+            </>
+          )}
+
         </div>
-        <div className="mt-6 h-20 bg-gradient-to-b from-[#f8f8f3] to-[#9BBE87] md:mt-8 md:h-28" />
       </section>
 
       {/* ================= PRODUCT SWITCHER ================= */}

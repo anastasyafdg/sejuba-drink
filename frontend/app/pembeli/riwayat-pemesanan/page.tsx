@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -172,12 +173,18 @@ export default function RiwayatPemesananPage() {
                     Total {order.detail_pesanan.length} Produk : Rp. {order.total_harga.toLocaleString("id-ID")}
                   </p>
                   <div className="flex items-center gap-3 w-full justify-end">
-                    <button className="px-5 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-400 rounded-lg hover:bg-gray-50 transition w-full md:w-auto">
+                    <Link
+                      href="/pembeli/ulasan"
+                      className="border border-gray-400 px-6 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                    >
                       Lihat Rating
-                    </button>
-                    <button className="px-5 py-2 text-sm font-medium text-[#F59B22] bg-white border border-[#F59B22] rounded-lg hover:bg-[#fff7ed] transition w-full md:w-auto">
+                    </Link>
+                    <Link
+                      href="/pembeli/pemesanan"
+                      className="border border-orange-500 text-orange-500 px-6 py-2 rounded-lg hover:bg-orange-50"
+                    >
                       Beli Lagi
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

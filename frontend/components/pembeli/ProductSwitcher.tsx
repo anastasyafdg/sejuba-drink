@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Props = {
   search?: string;
@@ -82,13 +82,25 @@ const allProducts = [
 ];
 
 export default function ProductSwitcher({ search = "" }: Props) {
-  const filtered = allProducts.filter((product) =>
-    product.ingredients.some((item) =>
-      item.includes(search.toLowerCase())
-    )
-  );
+  const filtered = allProducts.filter((product) => {
+    const keyword = search.toLowerCase();
+
+    return (
+      product.name.toLowerCase().includes(keyword) ||
+      product.type.toLowerCase().includes(keyword) ||
+      product.ingredients.some((item) =>
+        item.toLowerCase().includes(keyword)
+      )
+    );
+  });
 
   const [active, setActive] = useState(filtered[0] || allProducts[0]);
+
+  useEffect(() => {
+    if (search && filtered.length > 0) {
+      setActive(filtered[0]);
+    }
+  }, [search]);
 
   const current = active || allProducts[0];
 
