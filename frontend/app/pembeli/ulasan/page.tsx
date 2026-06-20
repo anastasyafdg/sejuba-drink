@@ -61,6 +61,7 @@ interface Review {
 export default function UlasanPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [openModal, setOpenModal] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<number | "all">("all");
 
   useEffect(() => {
     const loadUlasan = async () => {
@@ -87,6 +88,24 @@ export default function UlasanPage() {
     loadUlasan();
 
   }, []);
+
+  // Perhitungan statistik ulasan
+  const totalReviews = reviews.length;
+  const starCounts = {
+    5: reviews.filter((r) => r.rating === 5).length,
+    4: reviews.filter((r) => r.rating === 4).length,
+    3: reviews.filter((r) => r.rating === 3).length,
+    2: reviews.filter((r) => r.rating === 2).length,
+    1: reviews.filter((r) => r.rating === 1).length,
+  };
+
+  const averageRating = totalReviews > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
+    : "0.0";
+
+  const filteredReviews = selectedFilter === "all"
+    ? reviews
+    : reviews.filter((r) => r.rating === selectedFilter);
 
   return (
     <div className="w-full">
@@ -189,52 +208,132 @@ export default function UlasanPage() {
 
             <button
               onClick={() => setOpenModal(true)}
-              className="bg-[#F59B22] text-white px-6 py-3 rounded-full hover:bg-orange-500 transition shadow-sm"
+              className="bg-[#F59B22] text-white px-6 py-3 rounded-full hover:bg-orange-500 transition shadow-sm font-semibold text-sm md:text-base"
             >
               + Tambah Ulasan
             </button>
           </div>
 
+          {/* RATING SUMMARY & FILTERS CARD */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-[24px] p-6 md:p-8 mb-12 flex flex-col md:flex-row gap-8 items-center justify-between">
+            {/* Left Column: Average Rating Summary */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left shrink-0">
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl md:text-6xl font-extrabold text-white">
+                  {averageRating}
+                </span>
+                <span className="text-white/70 text-lg md:text-xl font-medium">/ 5.0</span>
+              </div>
+              
+              {/* Star icons representing average rating */}
+              <div className="flex gap-1 text-yellow-300 text-2xl mt-3 select-none">
+                {Array.from({ length: 5 }).map((_, index) => {
+                  const isFilled = index < Math.round(parseFloat(averageRating));
+                  return (
+                    <span key={index}>
+                      {isFilled ? "★" : "☆"}
+                    </span>
+                  );
+                })}
+              </div>
+
+              <p className="text-white/80 mt-3 text-sm font-medium">
+                Berdasarkan {totalReviews} Ulasan Pembeli
+              </p>
+            </div>
+
+            {/* Right Column: Star Filter Buttons */}
+            <div className="flex-1 w-full border-t border-white/10 md:border-t-0 md:border-l md:border-white/10 pt-6 md:pt-0 md:pl-8">
+              <p className="text-white font-semibold mb-4 text-center md:text-left text-sm md:text-base">
+                Filter Ulasan berdasarkan Bintang:
+              </p>
+              <div className="flex flex-wrap gap-2.5 justify-center md:justify-start">
+                {/* Semua Filter Button */}
+                <button
+                  onClick={() => setSelectedFilter("all")}
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm border ${
+                    selectedFilter === "all"
+                      ? "bg-[#F59B22] border-[#F59B22] text-white ring-2 ring-white/20 scale-[1.03]"
+                      : "bg-white/10 border-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  Semua ({totalReviews})
+                </button>
+
+                {/* Star Filter Buttons (5 to 1) */}
+                {([5, 4, 3, 2, 1] as const).map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setSelectedFilter(star)}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-1.5 shadow-sm border ${
+                      selectedFilter === star
+                        ? "bg-[#F59B22] border-[#F59B22] text-white ring-2 ring-white/20 scale-[1.03]"
+                        : "bg-white/10 border-white/10 text-white hover:bg-white/20"
+                    }`}
+                  >
+                    <span>{star}</span>
+                    <span className="text-yellow-300 select-none">★</span>
+                    <span className="text-xs text-white/80">({starCounts[star]})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* LIST */}
           <div className="space-y-8">
-            {reviews.map((r, i) => (
-              <div key={r.id_ulasan}>
-                <div className="flex gap-5">
+            {filteredReviews.length > 0 ? (
+              filteredReviews.map((r, i) => (
+                <div key={r.id_ulasan}>
+                  <div className="flex gap-5">
 
-                  {/* AVATAR */}
-                  <div className="w-12 h-12 bg-white/40 rounded-full flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-white">
-                      person
-                    </span>
-                  </div>
-
-                  {/* CONTENT */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-white font-semibold text-[16px]">
-                        {r.pembeli?.nama_pembeli}
-                      </p>
-
-                      <span className="text-white/70 text-sm">
-                        • {r.produk?.name}
+                    {/* AVATAR */}
+                    <div className="w-12 h-12 bg-white/40 rounded-full flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-white">
+                        person
                       </span>
                     </div>
 
-                    <div className="text-yellow-300 text-sm mt-1 mb-1">
-                      {"★".repeat(r.rating)}
+                    {/* CONTENT */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-white font-semibold text-[16px]">
+                          {r.pembeli?.nama_pembeli}
+                        </p>
+
+                        <span className="text-white/70 text-sm">
+                          • {r.produk?.name}
+                        </span>
+                      </div>
+
+                      <div className="text-yellow-300 text-sm mt-1 mb-1 select-none">
+                        {"★".repeat(r.rating) + "☆".repeat(5 - r.rating)}
+                      </div>
+
+                      <p className="text-white text-[14px] leading-relaxed">
+                        {r.ulasan}
+                      </p>
                     </div>
-
-                    <p className="text-white text-[14px] leading-relaxed">
-                      {r.ulasan}
-                    </p>
                   </div>
-                </div>
 
-                {i !== reviews.length - 1 && (
-                  <div className="border-b border-white/30 mt-6"></div>
-                )}
+                  {i !== filteredReviews.length - 1 && (
+                    <div className="border-b border-white/30 mt-6"></div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-16 bg-white/5 rounded-[24px] border border-white/10 flex flex-col items-center">
+                <span className="material-symbols-outlined text-white/50 text-5xl mb-3">
+                  rate_review
+                </span>
+                <p className="text-white font-medium text-lg">
+                  Belum ada ulasan untuk rating {selectedFilter} bintang
+                </p>
+                <p className="text-white/60 text-sm mt-2 max-w-md">
+                  Silakan pilih filter bintang yang lain atau klik filter "Semua" untuk menampilkan kembali seluruh ulasan.
+                </p>
               </div>
-            ))}
+            )}
           </div>
 
         </div>

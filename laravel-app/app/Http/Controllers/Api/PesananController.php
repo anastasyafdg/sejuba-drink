@@ -32,11 +32,14 @@ class PesananController extends Controller
             'items' => 'required|array'
         ]);
 
-        $totalHarga = 0;
+        $subtotal = 0;
 
         foreach ($request->items as $item) {
-            $totalHarga += $item['price'] * $item['qty'];
+            $subtotal += $item['price'] * $item['qty'];
         }
+
+        // Total harga disimpan dengan menyertakan ongkos kirim Rp 10.000 flat rate
+        $totalHarga = $subtotal + 10000;
 
         $pesanan = Pesanan::create([
             'id_pembeli' => $request->id_pembeli,

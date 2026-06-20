@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useAuth } from "@/lib/AuthContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CartItem {
@@ -21,6 +22,7 @@ const ONGKIR = 10000;
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Pemesanan2Page() {
     const router = useRouter();
+    const { pembeli, isLoggedIn } = useAuth();
 
     // Form state
     const [nama, setNama] = useState("");
@@ -28,6 +30,42 @@ export default function Pemesanan2Page() {
     const [telepon, setTelepon] = useState("");
     const [alamat, setAlamat] = useState("");
     const [jasa, setJasa] = useState<"delivery" | "selfpickup">("delivery");
+
+    // Guard login: Arahkan ke halaman login jika belum login
+    useEffect(() => {
+        if (!isLoggedIn) {
+            toast.error("Silakan login terlebih dahulu");
+            router.replace("/pembeli/login?from=/pembeli/pemesanan2");
+        }
+    }, [isLoggedIn, router]);
+
+    // Ambil data profil pembeli dari API secara otomatis saat halaman dimuat
+    useEffect(() => {
+        if (!pembeli) return;
+
+        const API = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+
+        const loadProfilPembeli = async () => {
+            try {
+                const response = await fetch(`${API}/api/pembeli/profil`, {
+                    headers: {
+                        Accept: "application/json",
+                        "X-Pembeli-Id": String(pembeli.id_pembeli),
+                    },
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setNama(data.data.nama_pembeli ?? "");
+                    setEmail(data.data.email ?? "");
+                    setTelepon(data.data.no_telepon ?? "");
+                }
+            } catch (error) {
+                console.error("Gagal mengambil data profil pembeli untuk checkout:", error);
+            }
+        };
+
+        loadProfilPembeli();
+    }, [pembeli]);
 
     // Map state
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -246,6 +284,7 @@ export default function Pemesanan2Page() {
             );
 
             sessionStorage.removeItem("sejuba_cart");
+            localStorage.removeItem("sejuba_cart_persistent");
 
             toast.success(
                 "Pesanan berhasil dibuat! Silakan lanjutkan pembayaran."

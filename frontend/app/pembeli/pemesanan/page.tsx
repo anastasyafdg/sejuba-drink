@@ -57,37 +57,44 @@ export default function PemesananPage() {
 
   const [loading, setLoading] = useState(true);
 
-  // ================= RESTORE PENDING CART SETELAH LOGIN =================
+  // ================= LOAD CART DARI LOCALSTORAGE (saat mount) =================
   useEffect(() => {
     try {
+      // 1. Cek dulu pending cart (dari redirect login)
       const pendingCart = sessionStorage.getItem("sejuba_pending_cart");
       if (pendingCart) {
         const parsed = JSON.parse(pendingCart);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setCart(parsed);
           sessionStorage.removeItem("sejuba_pending_cart");
-          // Auto-buka sidebar keranjang agar user sadar cartnya ter-restore
+          // Simpan juga ke localStorage agar persisten
+          localStorage.setItem("sejuba_cart_persistent", JSON.stringify(parsed));
           setOpen(true);
+          return;
+        }
+      }
+
+      // 2. Baca dari localStorage (untuk persistensi antar refresh/tab)
+      const savedCart = localStorage.getItem("sejuba_cart_persistent");
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCart(parsed);
         }
       }
     } catch {}
   }, []);
 
-  // ================= RESTORE PENDING CART SETELAH LOGIN =================
+  // ================= SIMPAN CART KE LOCALSTORAGE (saat cart berubah) =================
   useEffect(() => {
     try {
-      const pendingCart = sessionStorage.getItem("sejuba_pending_cart");
-      if (pendingCart) {
-        const parsed = JSON.parse(pendingCart);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCart(parsed);
-          sessionStorage.removeItem("sejuba_pending_cart");
-          // Auto-buka sidebar keranjang agar user sadar cartnya ter-restore
-          setOpen(true);
-        }
+      if (cart.length > 0) {
+        localStorage.setItem("sejuba_cart_persistent", JSON.stringify(cart));
+      } else {
+        localStorage.removeItem("sejuba_cart_persistent");
       }
     } catch {}
-  }, []);
+  }, [cart]);
 
   // ================= FETCH PRODUCTS =================
   useEffect(() => {

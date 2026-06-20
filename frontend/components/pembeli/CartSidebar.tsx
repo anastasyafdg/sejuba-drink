@@ -72,13 +72,22 @@ export default function CartSidebar({ open, setOpen, cart, setCart }: Props) {
                     {cart.length === 0 ? (
                         <p className="text-center text-gray-400">Keranjang kosong</p>
                     ) : (
-                        cart.map((item: CartItemType, i: number) => (
+                    cart.map((item: CartItemType, i: number) => (
                             <CartItem
                                 key={i}
                                 item={item}
                                 onRemove={() =>
                                     setCart((prev: CartItemType[]) =>
                                         prev.filter((_, idx) => idx !== i)
+                                    )
+                                }
+                                onQtyChange={(delta: number) =>
+                                    setCart((prev: CartItemType[]) =>
+                                        prev.map((it, idx) =>
+                                            idx === i
+                                                ? { ...it, qty: Math.max(1, it.qty + delta) }
+                                                : it
+                                        )
                                     )
                                 }
                             />

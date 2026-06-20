@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ReviewModal from "@/components/pembeli/ReviewModal";
 
 const tabs = [
   "Semua",
@@ -18,18 +18,32 @@ interface OrderItem {
   status_pesanan: string;
   total_harga: number;
   detail_pesanan: {
+    id_produk: number;
     ukuran: string;
+    jumlah: number;
+    harga_satuan: number;
     produk: {
+      id: number;
       name: string;
       image: string;
     };
   }[];
 }
 
+interface PreselectedProduct {
+  id: number;
+  name: string;
+  image?: string;
+}
+
 export default function RiwayatPemesananPage() {
 
   const [activeTab, setActiveTab] = useState("Semua");
   const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [reviewModal, setReviewModal] = useState<{ open: boolean; product: PreselectedProduct | null }>({
+    open: false,
+    product: null,
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -52,8 +66,6 @@ export default function RiwayatPemesananPage() {
 
         const data = await response.json();
 
-        console.log(data);
-
         setOrders(data.data);
 
       } catch (error) {
@@ -74,8 +86,27 @@ export default function RiwayatPemesananPage() {
           order.status_pesanan === activeTab
       );
 
-  console.log("ORDERS =", orders);
-  console.log("FILTERED =", filteredOrders);
+  // ─── Beli Lagi: isi cart dari item pesanan lalu ke halaman pemesanan ───────
+  const handleBeliLagi = (order: OrderItem) => {
+    const cartItems = order.detail_pesanan.map((d) => ({
+      id: d.produk.id,
+      name: d.produk.name,
+      image: d.produk.image
+        ? (d.produk.image.startsWith("http")
+          ? d.produk.image
+          : `http://127.0.0.1:8000/storage/${d.produk.image}`)
+        : "/images/produk/green.png",
+      price: d.harga_satuan,
+      size: d.ukuran,
+      qty: d.jumlah,
+    }));
+
+    try {
+      localStorage.setItem("sejuba_cart_persistent", JSON.stringify(cartItems));
+    } catch { }
+
+    router.push("/pembeli/pemesanan");
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -140,6 +171,9 @@ export default function RiwayatPemesananPage() {
                   <div>
                     <h3 className="font-bold text-gray-900">{order.detail_pesanan?.[0]?.produk?.name}</h3>
                     <p className="text-gray-500 text-sm mt-1">{order.detail_pesanan?.[0]?.ukuran}</p>
+                    {order.detail_pesanan.length > 1 && (
+                      <p className="text-gray-400 text-xs mt-0.5">+{order.detail_pesanan.length - 1} produk lainnya</p>
+                    )}
                     <button onClick={() => {
 
                       sessionStorage.setItem(
@@ -170,21 +204,30 @@ export default function RiwayatPemesananPage() {
                 {/* Right Side: Price & Actions */}
                 <div className="flex flex-col items-start md:items-end w-full md:w-auto">
                   <p className="font-bold text-gray-800 mb-6">
-                    Total {order.detail_pesanan.length} Produk : Rp. {order.total_harga.toLocaleString("id-ID")}
+                    Total Pembayaran ({order.detail_pesanan.length} Produk) : Rp. {(order.detail_pesanan.reduce((sum, item) => sum + (item.harga_satuan * item.jumlah), 0) + 10000).toLocaleString("id-ID")}
                   </p>
                   <div className="flex items-center gap-3 w-full justify-end">
-                    <Link
-                      href="/pembeli/ulasan"
-                      className="border border-gray-400 px-6 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                    <button
+                      onClick={() =>
+                        setReviewModal({
+                          open: true,
+                          product: {
+                            id: order.detail_pesanan?.[0]?.produk?.id,
+                            name: order.detail_pesanan?.[0]?.produk?.name,
+                            image: order.detail_pesanan?.[0]?.produk?.image,
+                          },
+                        })
+                      }
+                      className="bg-[#70A625] text-white px-6 py-2 rounded-lg hover:bg-[#5d8b1f] transition"
                     >
-                      Lihat Rating
-                    </Link>
-                    <Link
-                      href="/pembeli/pemesanan"
-                      className="border border-orange-500 text-orange-500 px-6 py-2 rounded-lg hover:bg-orange-50"
+                      Beri Ulasan
+                    </button>
+                    <button
+                      onClick={() => handleBeliLagi(order)}
+                      className="border border-orange-500 text-orange-500 px-6 py-2 rounded-lg hover:bg-orange-50 transition"
                     >
                       Beli Lagi
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -192,6 +235,13 @@ export default function RiwayatPemesananPage() {
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      <ReviewModal
+        open={reviewModal.open}
+        setOpen={(v) => setReviewModal((prev) => ({ ...prev, open: v }))}
+        preselectedProduct={reviewModal.product}
+      />
     </div>
   );
 }

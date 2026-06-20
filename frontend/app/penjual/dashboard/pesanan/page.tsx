@@ -77,7 +77,7 @@ function RowInfo({ label, value }: { label: string; value: React.ReactNode }) {
 
 /* ── Detail Modal ── */
 function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = pesanan.total_harga;
+    const subTotal = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.subtotal, 0) ?? 0;
     const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
     const noHp = pesanan.pembeli?.no_telepon ?? "-";
     const namaProduk = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
@@ -113,11 +113,21 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{formatRp(subTotal)}</div>
                     </div>
 
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, color: "#6b7280" }}>Subtotal Produk</span>
+                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                        <span style={{ fontSize: 13, color: "#6b7280" }}>Ongkos Kirim</span>
+                        <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Rp 10.000</span>
+                    </div>
+
                     <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
 
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
-                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal)}</span>
+                        <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal + 10000)}</span>
                     </div>
                 </div>
 
@@ -129,7 +139,7 @@ function DetailModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =>
 
 /* ── Invoice Modal ── */
 function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () => void }) {
-    const subTotal = pesanan.total_harga;
+    const subTotal = pesanan.detail_pesanan?.reduce((sum, item) => sum + item.subtotal, 0) ?? 0;
     const namaPelanggan = pesanan.pembeli?.nama_pembeli ?? "-";
     const noHp = pesanan.pembeli?.no_telepon ?? "-";
     const namaProduk = pesanan.detail_pesanan?.[0]?.produk?.name ?? "-";
@@ -190,11 +200,21 @@ function InvoiceModal({ pesanan, onClose }: { pesanan: ApiPesanan; onClose: () =
                             <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{formatRp(subTotal)}</div>
                         </div>
 
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                            <span style={{ fontSize: 13, color: "#6b7280" }}>Subtotal Produk</span>
+                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>{formatRp(subTotal)}</span>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                            <span style={{ fontSize: 13, color: "#6b7280" }}>Ongkos Kirim</span>
+                            <span style={{ fontSize: 13, color: "#111827", fontWeight: 600 }}>Rp 10.000</span>
+                        </div>
+
                         <div style={{ height: 1, background: "#f3f4f6", margin: "0 0 16px 0" }} />
 
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>Total Pembayaran</span>
-                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal)}</span>
+                            <span style={{ fontSize: 14, color: "#16a34a", fontWeight: 700 }}>{formatRp(subTotal + 10000)}</span>
                         </div>
                     </div>
                 </div>
@@ -295,7 +315,10 @@ export default function PesananPage() {
         });
     }, [pesanan, activeStatus, search]);
 
-    const totalPendapatan = pesanan.reduce((s, p) => s + p.total_harga, 0);
+    const totalPendapatan = pesanan.reduce((s, p) => {
+        const sub = p.detail_pesanan?.reduce((sum, item) => sum + item.subtotal, 0) ?? 0;
+        return s + sub + 10000;
+    }, 0);
     const countOf = (s: StatusPesanan) => pesanan.filter(p => p.status_pesanan === s).length;
 
     const PER_PAGE = 10;
@@ -399,7 +422,7 @@ export default function PesananPage() {
 
                                         {/* Total Harga */}
                                         <td style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, fontSize: 13, fontWeight: 700, color: DK, whiteSpace: "nowrap" }}>
-                                            {formatRp(p.total_harga)}
+                                            {formatRp((p.detail_pesanan?.reduce((sum, item) => sum + item.subtotal, 0) ?? 0) + 10000)}
                                         </td>
 
                                         {/* Status */}

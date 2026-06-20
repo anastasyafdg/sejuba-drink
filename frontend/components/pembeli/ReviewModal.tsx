@@ -15,9 +15,10 @@ interface Product {
 interface ReviewModalProps {
     open: boolean;
     setOpen: (v: boolean) => void;
+    preselectedProduct?: Product | null;
 }
 
-export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
+export default function ReviewModal({ open, setOpen, preselectedProduct }: ReviewModalProps) {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [products, setProducts] = useState<Product[]>([]);
@@ -25,6 +26,13 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
     const [showDropdown, setShowDropdown] = useState(false);
     const [ulasan, setUlasan] = useState("");
     const { pembeli } = useAuth();
+
+    // Jika ada produk yang sudah dipilih dari luar (misal dari riwayat pesanan)
+    useEffect(() => {
+        if (preselectedProduct) {
+            setSelectedProduct(preselectedProduct);
+        }
+    }, [preselectedProduct]);
 
     useEffect(() => {
 
@@ -56,6 +64,16 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
         loadProduk();
 
     }, []);
+
+    // Reset form setiap kali modal ditutup
+    useEffect(() => {
+        if (!open) {
+            setRating(0);
+            setHover(0);
+            setUlasan("");
+            setShowDropdown(false);
+        }
+    }, [open]);
 
     const submitUlasan = async () => {
         try {
@@ -140,13 +158,11 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
                     Bagikan pengalaman mu setelah menikmati Sejuba Drink
                 </p>
 
-                {/* ================= DROPDOWN PRODUK ================= */}
+                {/* ================= PRODUK (dropdown jika bebas, readonly jika dari riwayat) ================= */}
                 <div className="mt-6 relative">
 
-                    <div
-                        onClick={() => setShowDropdown(!showDropdown)}
-                        className="flex items-center justify-between cursor-pointer"
-                    >
+                    {preselectedProduct ? (
+                        // Tampilan read-only: produk sudah terpilih dari riwayat pesanan
                         <div className="flex items-center gap-3">
                             <div className="bg-[#DCE5DE] rounded-[14px] p-3">
                                 <img
@@ -160,51 +176,69 @@ export default function ReviewModal({ open, setOpen }: ReviewModalProps) {
                                     height={50}
                                 />
                             </div>
-
                             <div>
-                                <p className="font-semibold text-[16px]">
-                                    {selectedProduct?.name}
-                                </p>
-                                <p className="text-gray-500 text-xs">
-                                    Produk Sejuba Drink
-                                </p>
+                                <p className="font-semibold text-[16px]">{selectedProduct?.name}</p>
+                                <p className="text-gray-500 text-xs">Produk yang kamu beli</p>
                             </div>
                         </div>
-
-                        <span className="material-symbols-outlined text-gray-500">
-                            expand_more
-                        </span>
-                    </div>
-
-                    {/* DROPDOWN */}
-                    {showDropdown && (
-                        <div className="absolute w-full mt-2 bg-white rounded-xl shadow-lg z-50">
-                            {products.map((p) => (
-                                <div
-                                    key={p.id}
-                                    onClick={() => {
-                                        setSelectedProduct(p);
-                                        setShowDropdown(false);
-                                    }}
-                                    className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer"
-                                >
-                                    <img
-                                        src={
-                                            p.image
-                                                ? `http://127.0.0.1:8000/storage/${p.image}`
-                                                : "/images/logo/logo-sejuba.png"
-                                        }
-                                        alt=""
-                                        width={35}
-                                        height={35}
-                                    />
+                    ) : (
+                        // Dropdown biasa jika dibuka dari halaman ulasan
+                        <>
+                            <div
+                                onClick={() => setShowDropdown(!showDropdown)}
+                                className="flex items-center justify-between cursor-pointer"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-[#DCE5DE] rounded-[14px] p-3">
+                                        <img
+                                            src={
+                                                selectedProduct?.image
+                                                    ? `http://127.0.0.1:8000/storage/${selectedProduct.image}`
+                                                    : "/images/logo/logo-sejuba.png"
+                                            }
+                                            alt=""
+                                            width={50}
+                                            height={50}
+                                        />
+                                    </div>
                                     <div>
-                                        <p className="text-sm font-medium">{p.name}</p>
-                                        <p className="text-xs text-gray-500">Produk Sejuba Drink</p>
+                                        <p className="font-semibold text-[16px]">{selectedProduct?.name}</p>
+                                        <p className="text-gray-500 text-xs">Produk Sejuba Drink</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                                <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                            </div>
+
+                            {showDropdown && (
+                                <div className="absolute w-full mt-2 bg-white rounded-xl shadow-lg z-50">
+                                    {products.map((p) => (
+                                        <div
+                                            key={p.id}
+                                            onClick={() => {
+                                                setSelectedProduct(p);
+                                                setShowDropdown(false);
+                                            }}
+                                            className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer"
+                                        >
+                                            <img
+                                                src={
+                                                    p.image
+                                                        ? `http://127.0.0.1:8000/storage/${p.image}`
+                                                        : "/images/logo/logo-sejuba.png"
+                                                }
+                                                alt=""
+                                                width={35}
+                                                height={35}
+                                            />
+                                            <div>
+                                                <p className="text-sm font-medium">{p.name}</p>
+                                                <p className="text-xs text-gray-500">Produk Sejuba Drink</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
