@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function PembeliPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="w-full">
       {/* HERO SECTION */}
@@ -19,12 +22,12 @@ export default function PembeliPage() {
           {/* KIRI */}
           <div className="flex flex-col justify-start">
             <h1 className="max-w-[520px] text-[42px] font-extrabold leading-[1.08] md:text-[64px]">
-              <span className="text-[#5E8E1B]">Not just </span>
-              <span className="text-[#F59B22]">Refreshing,</span>
+              <span className="text-[#5E8E1B]">{t("home.hero.title1")} </span>
+              <span className="text-[#F59B22]">{t("home.hero.title2")}</span>
               <br />
-              <span className="text-[#5E8E1B]">Something More is</span>
+              <span className="text-[#5E8E1B]">{t("home.hero.title3")}</span>
               <br />
-              <span className="text-[#F59B22]">Happening</span>
+              <span className="text-[#F59B22]">{t("home.hero.title4")}</span>
             </h1>
 
             <div className="mt-8 md:mt-10">
@@ -42,18 +45,16 @@ export default function PembeliPage() {
           {/* KANAN */}
           <div className="flex flex-col justify-start pt-2 md:pt-3">
             <h2 className="max-w-[520px] text-[28px] font-bold leading-tight text-[#79B51C] md:text-[40px]">
-              Freshness for Your Lifestyle
+              {t("home.hero.subtitle")}
             </h2>
 
             <p className="mt-5 max-w-[470px] text-[15px] leading-8 text-gray-700 md:mt-6 md:text-[20px] md:leading-[1.8]">
-              Sejuba Drink kini hadir sebagai sahabat terbaik untuk hidup
-              sehatmu. 100% dari buah, sayur, dan rempah alami, tanpa gula
-              tambahan! Rasakan kesegaran alami dalam setiap tegukannya!
+              {t("home.hero.desc")}
             </p>
 
             <p className="mt-8 text-[20px] font-bold leading-relaxed md:mt-12 md:text-[24px]">
-              <span className="text-[#79B51C]">Ubah kebiasaanmu, </span>
-              <span className="text-[#F59B22]">mulai dengan Sejuba Drink</span>
+              <span className="text-[#79B51C]">{t("home.hero.cta")} </span>
+              <span className="text-[#F59B22]">{t("home.hero.cta_sub")}</span>
             </p>
           </div>
         </div>
@@ -65,16 +66,14 @@ export default function PembeliPage() {
       <section className="bg-[#9BBE87] py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-8 md:grid-cols-2 md:px-14">
           <div className="text-white">
-            <h2 className="text-4xl font-bold md:text-5xl">Tentang Sejuba</h2>
+            <h2 className="text-4xl font-bold md:text-5xl">{t("home.about.title")}</h2>
 
             <p className="mt-8 max-w-md text-lg leading-8 text-white/90">
-              Sejuba Drink hadir dengan visi menyediakan minuman sehat yang
-              dapat dinikmati oleh semua kalangan, mulai dari anak-anak hingga
-              orang dewasa.
+              {t("home.about.desc")}
             </p>
             <Link href="/pembeli/tentang">
               <button className="mt-10 rounded-full bg-[#F5A623] px-8 py-3 text-sm font-semibold text-white shadow hover:opacity-90">
-                Selengkapnya
+                {t("home.about.more")}
               </button>
             </Link>
           </div>
@@ -101,9 +100,9 @@ export default function PembeliPage() {
         }}
       >
         <div className="mx-auto max-w-7xl px-8 text-center md:px-14">
-          <h2 className="text-5xl font-bold text-[#F59B22]">Produk</h2>
+          <h2 className="text-5xl font-bold text-[#F59B22]">{t("home.products.title")}</h2>
           <p className="mt-4 text-xl text-gray-700">
-            Quench your thirsty with Sejuba Drink
+            {t("home.products.subtitle")}
           </p>
 
           <div className="mt-12 flex justify-center">
@@ -118,19 +117,19 @@ export default function PembeliPage() {
 
           <div className="mt-10 text-lg leading-9 text-gray-700">
             <p>
-              Jelajahi rangkaian produk Sejuba Drink dan{" "}
+              {t("home.products.find")}{" "}
               <Link href="/pembeli/produk">
                 <span className="font-medium text-[#5E8E1B] underline hover:opacity-80 cursor-pointer">
-                  temukan rasa favoritmu.
+                  {t("home.products.find_link")}
                 </span>
               </Link>
             </p>
 
             <p>
-              Jangan tunda—segarin harimu,{" "}
+              {t("home.products.order")}{" "}
               <Link href="/pembeli/pemesanan">
                 <span className="font-medium text-[#F59B22] underline hover:opacity-80 cursor-pointer">
-                  pesan sekarang!
+                  {t("home.products.order_link")}
                 </span>
               </Link>
             </p>

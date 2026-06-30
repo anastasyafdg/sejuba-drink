@@ -2,9 +2,12 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function FooterPembeli() {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
   if (pathname === "/pembeli/login" || pathname === "/pembeli/register") return null;
 
   return (
@@ -27,7 +30,7 @@ export default function FooterPembeli() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-lg font-semibold">Contact Us:</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t("footer.contact")}</h3>
           <div className="space-y-3 text-sm">
             <p>@sejubadrink</p>
             <p>+62 812 2062 6565</p>
@@ -36,7 +39,7 @@ export default function FooterPembeli() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-lg font-semibold">Alamat:</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t("footer.address")}</h3>
           <p className="text-sm leading-7">
             Jl. Perumahan Dotamana
             <br />
@@ -45,11 +48,9 @@ export default function FooterPembeli() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-lg font-semibold">Feedback:</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t("footer.feedback")}</h3>
           <p className="text-sm leading-7">
-            Masukan Kritik dan Saran
-            <br />
-            kamu di sini!
+            {t("footer.feedback_sub")}
           </p>
         </div>
       </div>

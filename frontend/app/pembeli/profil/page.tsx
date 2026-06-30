@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -40,6 +41,7 @@ function Field({
 export default function ProfilPage() {
     const { pembeli, login, isLoggedIn } = useAuth();
     const router = useRouter();
+    const { t } = useLanguage();
 
     const [nama, setNama] = useState("");
     const [email, setEmail] = useState("");
@@ -72,7 +74,7 @@ export default function ProfilPage() {
                     setTelepon(data.data.no_telepon ?? "");
                 }
             })
-            .catch(() => showToast("Gagal memuat profil.", "error"))
+            .catch(() => showToast(t("profile.toast_load_error"), "error"))
             .finally(() => setFetching(false));
     }, [pembeli]);
 
@@ -88,11 +90,11 @@ export default function ProfilPage() {
         // Validasi password jika diisi
         const isChangingPassword = passLama || passBaru || passKonfirmasi;
         if (isChangingPassword && passBaru !== passKonfirmasi) {
-            showToast("Konfirmasi password tidak cocok.", "error");
+            showToast(t("profile.toast_pass_mismatch"), "error");
             return;
         }
         if (isChangingPassword && passBaru.length < 8) {
-            showToast("Password baru minimal 8 karakter.", "error");
+            showToast(t("profile.toast_pass_too_short"), "error");
             return;
         }
 
@@ -110,7 +112,7 @@ export default function ProfilPage() {
             });
             const dataProfil = await resProfil.json();
             if (!dataProfil.success) {
-                showToast(dataProfil.message ?? "Gagal memperbarui profil.", "error");
+                showToast(dataProfil.message ?? t("profile.toast_load_error"), "error");
                 return;
             }
 
@@ -134,18 +136,18 @@ export default function ProfilPage() {
                 });
                 const dataPass = await resPass.json();
                 if (!dataPass.success) {
-                    showToast(dataPass.message ?? "Gagal memperbarui password.", "error");
+                    showToast(dataPass.message ?? t("profile.toast_load_error"), "error");
                     return;
                 }
                 setPassLama(""); setPassBaru(""); setPassKonfirmasi("");
             }
 
             showToast(
-                isChangingPassword ? "Profil & password berhasil diperbarui!" : "Profil berhasil diperbarui!",
+                isChangingPassword ? t("profile.toast_save_with_pass") : t("profile.toast_save_success"),
                 "success"
             );
         } catch {
-            showToast("Tidak dapat terhubung ke server.", "error");
+            showToast(t("profile.toast_server_error"), "error");
         } finally {
             setLoading(false);
         }
@@ -157,7 +159,7 @@ export default function ProfilPage() {
         <>
             {/* ── HERO ── */}
             <section
-                className="relative bg-[#f8f8f3] pt-28 pb-8 md:pt-36 md:pb-10"
+                className="relative bg-[#f8f8f3] pt-48 pb-8 md:pt-56 md:pb-10"
                 style={{
                     backgroundImage: "url('/images/pattern/beranda1.png')",
                     backgroundRepeat: "repeat",
@@ -170,7 +172,7 @@ export default function ProfilPage() {
                         <span className="material-symbols-outlined text-[36px] text-[#5E8E1B]">account_circle</span>
                     </div>
                     <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">
-                        {fetching ? <span className="inline-block w-32 h-8 rounded-lg bg-gray-200 animate-pulse" /> : (nama || "Profil Saya")}
+                        {fetching ? <span className="inline-block w-32 h-8 rounded-lg bg-gray-200 animate-pulse" /> : (nama || t("profile.title"))}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">
                         {fetching ? <span className="inline-block w-48 h-3.5 rounded bg-gray-200 animate-pulse mt-1" /> : email}
@@ -195,12 +197,12 @@ export default function ProfilPage() {
                                 <div className="px-8 pt-7 pb-6 border-b border-gray-100">
                                     <div className="flex items-center gap-2 mb-5">
                                         <span className="material-symbols-outlined text-[20px] text-[#5E8E1B]">person</span>
-                                        <h2 className="text-[15px] font-semibold text-gray-700">Data Profil</h2>
+                                        <h2 className="text-[15px] font-semibold text-gray-700">{t("profile.data_section")}</h2>
                                     </div>
                                     <div className="space-y-4">
-                                        <Field label="Nama Lengkap" value={nama} onChange={setNama} placeholder="Masukkan nama lengkap" />
-                                        <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Masukkan email" />
-                                        <Field label="No. Telepon" value={telepon} onChange={setTelepon} placeholder="Masukkan nomor telepon" />
+                                        <Field label={t("profile.full_name")} value={nama} onChange={setNama} placeholder={t("profile.placeholder_name")} />
+                                        <Field label={t("profile.email")} type="email" value={email} onChange={setEmail} placeholder={t("profile.placeholder_email")} />
+                                        <Field label={t("profile.phone")} value={telepon} onChange={setTelepon} placeholder={t("profile.placeholder_phone")} />
                                     </div>
                                 </div>
 
@@ -208,13 +210,13 @@ export default function ProfilPage() {
                                 <div className="px-8 pt-6 pb-7">
                                     <div className="flex items-center gap-2 mb-5">
                                         <span className="material-symbols-outlined text-[20px] text-[#F59B22]">lock</span>
-                                        <h2 className="text-[15px] font-semibold text-gray-700">Ubah Password <span className="text-xs font-normal text-gray-400">(kosongkan jika tidak ingin ubah)</span></h2>
+                                        <h2 className="text-[15px] font-semibold text-gray-700">{t("profile.password_section")} <span className="text-xs font-normal text-gray-400">{t("profile.password_hint")}</span></h2>
                                     </div>
                                     <div className="space-y-4">
-                                        <Field label="Password Lama" type="password" value={passLama} onChange={setPassLama} placeholder="Masukkan password lama" />
+                                        <Field label={t("profile.old_pass")} type="password" value={passLama} onChange={setPassLama} placeholder={t("profile.placeholder_old_pass")} />
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <Field label="Password Baru" type="password" value={passBaru} onChange={setPassBaru} placeholder="Min. 8 karakter" />
-                                            <Field label="Konfirmasi Password" type="password" value={passKonfirmasi} onChange={setPassKonfirmasi} placeholder="Ulangi password baru" />
+                                            <Field label={t("profile.new_pass")} type="password" value={passBaru} onChange={setPassBaru} placeholder={t("profile.placeholder_new_pass")} />
+                                            <Field label={t("profile.confirm_pass")} type="password" value={passKonfirmasi} onChange={setPassKonfirmasi} placeholder={t("profile.placeholder_confirm")} />
                                         </div>
 
                                         {/* Password strength */}
@@ -222,7 +224,7 @@ export default function ProfilPage() {
                                             <div className="flex items-center gap-2">
                                                 <div className={`h-1.5 flex-1 rounded-full transition-all ${passBaru.length < 8 ? "bg-red-300" : passBaru.length < 12 ? "bg-yellow-300" : "bg-green-400"}`} />
                                                 <span className={`text-xs font-medium ${passBaru.length < 8 ? "text-red-500" : passBaru.length < 12 ? "text-yellow-600" : "text-green-600"}`}>
-                                                    {passBaru.length < 8 ? "Terlalu pendek" : passBaru.length < 12 ? "Sedang" : "Kuat"}
+                                                    {passBaru.length < 8 ? t("profile.pass_weak") : passBaru.length < 12 ? t("profile.pass_medium") : t("profile.pass_strong")}
                                                 </span>
                                             </div>
                                         )}
@@ -239,12 +241,12 @@ export default function ProfilPage() {
                                         {loading ? (
                                             <>
                                                 <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                                                Menyimpan...
+                                                {t("profile.saving")}
                                             </>
                                         ) : (
                                             <>
                                                 <span className="material-symbols-outlined text-[18px]">save</span>
-                                                Simpan Perubahan
+                                                {t("profile.save_btn")}
                                             </>
                                         )}
                                     </button>

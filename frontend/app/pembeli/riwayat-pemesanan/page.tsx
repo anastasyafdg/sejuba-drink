@@ -4,14 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReviewModal from "@/components/pembeli/ReviewModal";
+import { useLanguage } from "@/lib/LanguageContext";
 
-const tabs = [
+// Tab keys (values still match API status)
+const TAB_KEYS = [
   "Semua",
   "Menunggu Pembayaran",
   "Diproses",
   "Dikirim",
   "Selesai",
-];
+] as const;
+type TabKey = typeof TAB_KEYS[number];
 
 interface OrderItem {
   id_pesanan: number;
@@ -37,8 +40,8 @@ interface PreselectedProduct {
 }
 
 export default function RiwayatPemesananPage() {
-
-  const [activeTab, setActiveTab] = useState("Semua");
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<TabKey>("Semua");
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [reviewModal, setReviewModal] = useState<{ open: boolean; product: PreselectedProduct | null }>({
     open: false,
@@ -102,7 +105,12 @@ export default function RiwayatPemesananPage() {
     }));
 
     try {
-      localStorage.setItem("sejuba_cart_persistent", JSON.stringify(cartItems));
+      // Gunakan key unik per pembeli agar keranjang tidak tercampur
+      const pembeliData = JSON.parse(localStorage.getItem("pembeli") || "{}");
+      const cartKey = pembeliData?.id_pembeli
+        ? `sejuba_cart_${pembeliData.id_pembeli}`
+        : "sejuba_cart_guest";
+      localStorage.setItem(cartKey, JSON.stringify(cartItems));
     } catch { }
 
     router.push("/pembeli/pemesanan");
@@ -112,14 +120,14 @@ export default function RiwayatPemesananPage() {
     <div className="min-h-screen bg-white">
       {/* Header Section */}
       <div className="max-w-5xl mx-auto px-6 pt-48 pb-10">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 uppercase">Riwayat Pemesanan</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2 uppercase">{t("history.title")}</h1>
         <p className="text-gray-600 text-sm">
-          Lihat status dan detail semua pesanan yang pernah kamu buat.
+          {t("history.subtitle")}
         </p>
 
         {/* Tabs */}
         <div className="flex flex-wrap items-center gap-3 mt-8">
-          {tabs.map((tab) => {
+          {TAB_KEYS.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -130,7 +138,7 @@ export default function RiwayatPemesananPage() {
                   : "bg-white text-gray-500 border-gray-300 hover:bg-gray-50"
                   }`}
               >
-                {tab}
+                {t(`history.tab.${tab}` as any)}
               </button>
             );
           })}
@@ -143,11 +151,10 @@ export default function RiwayatPemesananPage() {
 
             <div className="border border-dashed border-gray-300 rounded-2xl py-20 text-center">
               <h3 className="text-lg font-semibold text-gray-700">
-                Belum ada pesanan
+                {t("history.empty_title")}
               </h3>
-
               <p className="text-gray-500 mt-2">
-                Pesanan yang kamu buat akan muncul di sini.
+                {t("history.empty_desc")}
               </p>
             </div>
 
@@ -172,7 +179,7 @@ export default function RiwayatPemesananPage() {
                     <h3 className="font-bold text-gray-900">{order.detail_pesanan?.[0]?.produk?.name}</h3>
                     <p className="text-gray-500 text-sm mt-1">{order.detail_pesanan?.[0]?.ukuran}</p>
                     {order.detail_pesanan.length > 1 && (
-                      <p className="text-gray-400 text-xs mt-0.5">+{order.detail_pesanan.length - 1} produk lainnya</p>
+                      <p className="text-gray-400 text-xs mt-0.5">+{order.detail_pesanan.length - 1} {t("history.other_products")}</p>
                     )}
                     <button onClick={() => {
 
@@ -204,7 +211,7 @@ export default function RiwayatPemesananPage() {
                 {/* Right Side: Price & Actions */}
                 <div className="flex flex-col items-start md:items-end w-full md:w-auto">
                   <p className="font-bold text-gray-800 mb-6">
-                    Total Pembayaran ({order.detail_pesanan.length} Produk) : Rp. {(order.detail_pesanan.reduce((sum, item) => sum + (item.harga_satuan * item.jumlah), 0) + 10000).toLocaleString("id-ID")}
+                    {t("history.total_payment")} ({order.detail_pesanan.length} {t("history.products_count")}) : Rp. {(order.detail_pesanan.reduce((sum, item) => sum + (item.harga_satuan * item.jumlah), 0) + 10000).toLocaleString("id-ID")}
                   </p>
                   <div className="flex items-center gap-3 w-full justify-end">
                     <button
@@ -220,13 +227,13 @@ export default function RiwayatPemesananPage() {
                       }
                       className="bg-[#70A625] text-white px-6 py-2 rounded-lg hover:bg-[#5d8b1f] transition"
                     >
-                      Beri Ulasan
+                      {t("history.btn_review")}
                     </button>
                     <button
                       onClick={() => handleBeliLagi(order)}
                       className="border border-orange-500 text-orange-500 px-6 py-2 rounded-lg hover:bg-orange-50 transition"
                     >
-                      Beli Lagi
+                      {t("history.btn_buy_again")}
                     </button>
                   </div>
                 </div>

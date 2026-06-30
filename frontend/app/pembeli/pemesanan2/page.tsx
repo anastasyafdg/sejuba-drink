@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CartItem {
@@ -23,6 +24,7 @@ const ONGKIR = 10000;
 export default function Pemesanan2Page() {
     const router = useRouter();
     const { pembeli, isLoggedIn } = useAuth();
+    const { t, language } = useLanguage();
 
     // Form state
     const [nama, setNama] = useState("");
@@ -34,10 +36,10 @@ export default function Pemesanan2Page() {
     // Guard login: Arahkan ke halaman login jika belum login
     useEffect(() => {
         if (!isLoggedIn) {
-            toast.error("Silakan login terlebih dahulu");
+            toast.error(t("checkout.toast_login"));
             router.replace("/pembeli/login?from=/pembeli/pemesanan2");
         }
-    }, [isLoggedIn, router]);
+    }, [isLoggedIn, router, t]);
 
     // Ambil data profil pembeli dari API secara otomatis saat halaman dimuat
     useEffect(() => {
@@ -114,8 +116,15 @@ export default function Pemesanan2Page() {
         if ((mapContainerRef.current as any)?._leaflet_id) return; // container sudah ada leaflet instance
         if (!mapContainerRef.current) return;
 
+        let isCancelled = false;
+
         // Leaflet diimport secara dinamis agar tidak error saat SSR
         import("leaflet").then((L) => {
+            if (isCancelled) return;
+            if (mapInstanceRef.current) return;
+            if (!mapContainerRef.current) return;
+            if ((mapContainerRef.current as any)?._leaflet_id) return;
+
             // Fix icon default Leaflet (masalah umum dengan bundler)
             // @ts-ignore
             delete L.Icon.Default.prototype._getIconUrl;
@@ -154,11 +163,11 @@ export default function Pemesanan2Page() {
                         { headers: { "Accept-Language": "id", "User-Agent": "SejubaDrink/1.0" } }
                     );
                     const data = await res.json();
-                    if (data?.display_name) setAlamat(data.display_name);
+                    if (data?.display_name && !isCancelled) setAlamat(data.display_name);
                 } catch {
                     // Gagal → biarkan user isi manual
                 } finally {
-                    setLoadingAddr(false);
+                    if (!isCancelled) setLoadingAddr(false);
                 }
             };
 
@@ -178,6 +187,7 @@ export default function Pemesanan2Page() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
+                        if (isCancelled) return;
                         const ll: [number, number] = [pos.coords.latitude, pos.coords.longitude];
                         map.setView(ll, 16);
                         marker.setLatLng(ll);
@@ -192,6 +202,7 @@ export default function Pemesanan2Page() {
 
         // Cleanup saat unmount
         return () => {
+            isCancelled = true;
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
@@ -215,18 +226,18 @@ export default function Pemesanan2Page() {
             );
 
             if (!pembeli.id_pembeli) {
-                toast.error("Silakan login terlebih dahulu");
+                toast.error(t("checkout.toast_login"));
                 router.push("/pembeli/login");
                 return;
             }
 
             if (!alamat.trim()) {
-                toast.error("Alamat pengiriman wajib diisi");
+                toast.error(t("checkout.toast_address_required"));
                 return;
             }
 
             if (cart.length === 0) {
-                toast.error("Keranjang masih kosong");
+                toast.error(t("checkout.toast_cart_empty"));
                 return;
             }
 
@@ -255,13 +266,13 @@ export default function Pemesanan2Page() {
             if (!response.ok) {
                 const text = await response.text();
                 console.error("API error response:", text);
-                throw new Error("Gagal membuat pesanan (server error)");
+                throw new Error(t("checkout.toast_server_error"));
             }
 
             const data = await response.json();
 
             if (!data?.data?.id_pesanan) {
-                throw new Error(data?.message || "Gagal membuat pesanan");
+                throw new Error(data?.message || t("checkout.toast_server_error"));
             }
 
             sessionStorage.setItem(
@@ -284,11 +295,14 @@ export default function Pemesanan2Page() {
             );
 
             sessionStorage.removeItem("sejuba_cart");
-            localStorage.removeItem("sejuba_cart_persistent");
+            // Hapus cart milik pembeli ini dari localStorage
+            if (pembeli?.id_pembeli) {
+                localStorage.removeItem(`sejuba_cart_${pembeli.id_pembeli}`);
+            } else {
+                localStorage.removeItem("sejuba_cart_guest");
+            }
 
-            toast.success(
-                "Pesanan berhasil dibuat! Silakan lanjutkan pembayaran."
-            );
+            toast.success(t("checkout.toast_order_success"));
 
             setTimeout(() => {
                 router.push("/pembeli/pembayaran");
@@ -299,7 +313,7 @@ export default function Pemesanan2Page() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : "Terjadi kesalahan saat membuat pesanan"
+                    : t("checkout.toast_error")
             );
         }
     };
@@ -321,20 +335,20 @@ export default function Pemesanan2Page() {
                     ════════════════════════════════════════ */}
                     <section className="mb-10">
                         <h2 className="text-xl font-extrabold tracking-wide mb-5 uppercase">
-                            Informasi Pemesanan
+                            {t("checkout.info_title")}
                         </h2>
 
                         {/* Nama */}
                         <div className="mb-4">
                             <label className="block text-sm text-gray-700 mb-1 font-medium">
-                                Nama Pemesan
+                                {t("checkout.buyer_name")}
                             </label>
                             <input
                                 id="input-nama"
                                 type="text"
                                 value={nama}
                                 onChange={(e) => setNama(e.target.value)}
-                                placeholder="Masukkan nama lengkap"
+                                placeholder={t("checkout.name_placeholder")}
                                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#6BAA4F] bg-gray-100 placeholder:text-gray-400 transition"
                             />
                         </div>
@@ -343,7 +357,7 @@ export default function Pemesanan2Page() {
                         <div className="grid grid-cols-2 gap-4 mb-3">
                             <div>
                                 <label className="block text-sm text-gray-700 mb-1 font-medium">
-                                    Email
+                                    {t("checkout.email")}
                                 </label>
                                 <input
                                     id="input-email"
@@ -356,21 +370,21 @@ export default function Pemesanan2Page() {
                             </div>
                             <div>
                                 <label className="block text-sm text-gray-700 mb-1 font-medium">
-                                    Nomor Telepon (WhatsApp)
+                                    {t("checkout.phone")}
                                 </label>
                                 <input
                                     id="input-telepon"
                                     type="tel"
                                     value={telepon}
                                     onChange={(e) => setTelepon(e.target.value)}
-                                    placeholder="+62 8xx xxxx xxxx"
+                                    placeholder={t("checkout.phone_placeholder")}
                                     className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#6BAA4F] bg-gray-100 placeholder:text-gray-400 transition"
                                 />
                             </div>
                         </div>
 
                         <p className="text-xs text-gray-500 italic">
-                            Notifikasi pesanan akan kami kirim melalui WhatsApp dan Email.
+                            {t("checkout.notify_info")}
                         </p>
                     </section>
 
@@ -379,12 +393,12 @@ export default function Pemesanan2Page() {
                     ════════════════════════════════════════ */}
                     <section className="mb-10">
                         <h2 className="text-xl font-extrabold tracking-wide mb-5 uppercase">
-                            Informasi Pengiriman
+                            {t("checkout.shipping_title")}
                         </h2>
 
                         {/* Alamat */}
                         <label className="block text-sm font-semibold text-gray-800 mb-2">
-                            Alamat pengiriman
+                            {t("checkout.shipping_address")}
                         </label>
                         <div className="relative mb-2">
                             <input
@@ -392,12 +406,12 @@ export default function Pemesanan2Page() {
                                 type="text"
                                 value={alamat}
                                 onChange={(e) => setAlamat(e.target.value)}
-                                placeholder="Rincian alamat (Cth: Blok, No, Nomor)"
+                                placeholder={t("checkout.address_placeholder")}
                                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#6BAA4F] bg-gray-100 placeholder:text-gray-400 transition pr-24"
                             />
                             {loadingAddr && (
                                 <span className="absolute right-3 top-3 text-[#6BAA4F] text-xs animate-pulse font-medium">
-                                    Mencari…
+                                    {t("checkout.searching")}
                                 </span>
                             )}
                         </div>
@@ -405,9 +419,9 @@ export default function Pemesanan2Page() {
                         {/* Map hint */}
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-sm text-[#F59B22] font-semibold">
-                                Pilih lokasi tujuan kamu
+                                {t("checkout.select_location")}
                             </span>
-                            <span className="text-xs text-gray-500">(Otomatis dari map)</span>
+                            <span className="text-xs text-gray-500">{t("checkout.auto_from_map")}</span>
                         </div>
 
                         {/* ── Leaflet Map ────────────────────────────── */}
@@ -421,7 +435,7 @@ export default function Pemesanan2Page() {
                                     <span className="material-symbols-outlined text-4xl text-gray-400 animate-bounce">
                                         map
                                     </span>
-                                    <p className="text-sm text-gray-400">Memuat peta…</p>
+                                    <p className="text-sm text-gray-400">{t("checkout.loading_map")}</p>
                                 </div>
                             )}
                             {/* Div ini SELALU ada di DOM — Leaflet mount di sini */}
@@ -429,7 +443,7 @@ export default function Pemesanan2Page() {
                         </div>
 
                         <p className="text-xs text-gray-400 mt-2 text-center">
-                            📍 Klik atau seret pin di peta untuk mengisi alamat secara otomatis
+                            {t("checkout.map_instruction")}
                         </p>
                     </section>
 
@@ -437,7 +451,7 @@ export default function Pemesanan2Page() {
                         JASA PENGIRIMAN
                     ════════════════════════════════════════ */}
                     <section className="mb-10">
-                        <h3 className="text-base font-bold mb-3">Jasa pengiriman</h3>
+                        <h3 className="text-base font-bold mb-3">{t("checkout.shipping_service")}</h3>
 
                         <div className="flex gap-8 mb-2">
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -450,7 +464,7 @@ export default function Pemesanan2Page() {
                                     onChange={() => setJasa("delivery")}
                                     className="accent-[#6BAA4F] w-4 h-4"
                                 />
-                                <span className="text-sm font-medium">Delivery</span>
+                                <span className="text-sm font-medium">{t("checkout.delivery")}</span>
                             </label>
 
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -463,18 +477,18 @@ export default function Pemesanan2Page() {
                                     onChange={() => setJasa("selfpickup")}
                                     className="accent-[#6BAA4F] w-4 h-4"
                                 />
-                                <span className="text-sm font-medium">Self Pick-up</span>
+                                <span className="text-sm font-medium">{t("checkout.self_pickup")}</span>
                             </label>
                         </div>
 
                         <p className="text-xs text-gray-600 leading-5 mb-1">
-                            <span className="font-semibold">Delivery</span> – Pengiriman cepat dalam 1 hari.
+                            <span className="font-semibold">{t("checkout.delivery")}</span> – {language === "id" ? "Pengiriman cepat dalam 1 hari." : "Fast delivery in 1 day."}
                         </p>
                         <p className="text-xs text-gray-600 leading-5">
-                            <span className="font-semibold">Self Pick-up</span> – Ambil sendiri di tempat.
+                            <span className="font-semibold">{t("checkout.self_pickup")}</span> – {language === "id" ? "Ambil sendiri di tempat." : "Pick up by yourself at location."}
                         </p>
                         <p className="text-xs text-[#F59B22] mt-2 italic">
-                            Waktu pengiriman dapat berubah tergantung kondisi cuaca dan lalu lintas.
+                            {t("checkout.delivery_notice")}
                         </p>
                     </section>
 
@@ -487,16 +501,16 @@ export default function Pemesanan2Page() {
                         <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                             {/* Header */}
                             <div className="bg-[#4F7703] px-5 py-3">
-                                <h3 className="font-bold text-base text-white">Ringkasan Belanja</h3>
+                                <h3 className="font-bold text-base text-white">{t("checkout.order_summary")}</h3>
                             </div>
 
                             {/* Body */}
                             <div className="bg-white px-5 py-4">
                                 {/* Table header */}
                                 <div className="grid grid-cols-3 text-xs font-semibold text-gray-700 mb-2 pb-2 border-b border-gray-200">
-                                    <span>Produk</span>
-                                    <span className="text-center">Kuantitas</span>
-                                    <span className="text-right">Harga</span>
+                                    <span>{t("checkout.product")}</span>
+                                    <span className="text-center">{t("checkout.quantity")}</span>
+                                    <span className="text-right">{t("checkout.price")}</span>
                                 </div>
 
                                 {/* Rows */}
@@ -511,7 +525,7 @@ export default function Pemesanan2Page() {
                                 {/* Biaya Kirim */}
                                 {jasa === "delivery" && (
                                     <div className="grid grid-cols-3 text-xs py-2 text-gray-800">
-                                        <span className="col-span-2">Biaya Kirim</span>
+                                        <span className="col-span-2">{t("checkout.shipping_cost")}</span>
                                         <span className="text-right">Rp.{ONGKIR.toLocaleString("id-ID")},00</span>
                                     </div>
                                 )}
@@ -521,7 +535,7 @@ export default function Pemesanan2Page() {
 
                                 {/* Total */}
                                 <div className="grid grid-cols-3 text-sm font-bold text-gray-900 pt-1">
-                                    <span className="col-span-2">Total Harga</span>
+                                    <span className="col-span-2">{t("checkout.total_price")}</span>
                                     <span className="text-right">Rp. {total.toLocaleString("id-ID")}</span>
                                 </div>
                             </div>
@@ -531,7 +545,7 @@ export default function Pemesanan2Page() {
                         <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                             {/* Header */}
                             <div className="bg-[#4F7703] px-5 py-3">
-                                <h3 className="font-bold text-base text-white">Metode Pembayaran</h3>
+                                <h3 className="font-bold text-base text-white">{t("checkout.payment_method")}</h3>
                             </div>
 
                             {/* Body */}
@@ -558,10 +572,10 @@ export default function Pemesanan2Page() {
                                         </svg>
                                     </div>
                                     <div>
-                                        <p className="font-bold text-sm text-gray-900">QRIS</p>
+                                        <p className="font-bold text-sm text-gray-900">{t("checkout.qris")}</p>
                                         <p className="text-xs text-gray-500 mt-0.5 leading-5">
-                                            Bayar cepat dan mudah scan QR<br />
-                                            Mendukung semua e-wallet &amp; mobile banking
+                                            {t("checkout.qris_desc")}<br />
+                                            {t("checkout.qris_support")}
                                         </p>
                                     </div>
                                 </div>
@@ -573,7 +587,7 @@ export default function Pemesanan2Page() {
                         NOTICE + ACTIONS
                     ════════════════════════════════════════ */}
                     <p className="text-center text-[#F59B22] font-semibold text-sm mb-6">
-                        Pastikan data kamu sudah tepat sebelum <br /> melakukan pemesanan ya!
+                        {t("checkout.verify_notice")}
                     </p>
 
                     <div className="flex justify-center gap-4">
@@ -582,7 +596,7 @@ export default function Pemesanan2Page() {
                             onClick={handleBatal}
                             className="px-8 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-100 transition"
                         >
-                            Batalkan
+                            {t("checkout.cancel")}
                         </button>
 
                         <button
@@ -590,7 +604,7 @@ export default function Pemesanan2Page() {
                             onClick={handleBayar}
                             className="px-8 py-3 rounded-full bg-[#3A6B22] text-white font-semibold text-sm hover:bg-[#2f5a1c] transition shadow-md"
                         >
-                            Bayar dengan QRIS
+                            {t("checkout.pay_qris")}
                         </button>
                     </div>
 

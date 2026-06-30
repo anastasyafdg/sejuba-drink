@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface DetailItem {
     subtotal: number;
@@ -18,10 +19,12 @@ interface PesananData {
     status_pesanan: string;
     status_pembayaran: string;
     detail_pesanan: DetailItem[];
+    tanggal_pesanan?: string;
+    updated_at?: string;
 }
 
 export default function StatusPesananPage() {
-
+    const { t, language } = useLanguage();
     const [pesanan, setPesanan] = useState<PesananData | null>(null);
     useEffect(() => {
 
@@ -125,8 +128,8 @@ export default function StatusPesananPage() {
         switch (pesanan.status_pesanan) {
             case "Menunggu Konfirmasi":
                 return {
-                    label: "Menunggu Konfirmasi",
-                    desc: "Pesanan Anda telah diterima dan sedang menunggu konfirmasi oleh tim Sejuba Drink.",
+                    label: t("status.state.pending.label"),
+                    desc: t("status.state.pending.desc"),
                     icon: "pending_actions",
                     colorClass: "text-amber-600 bg-amber-50 border-amber-200",
                     iconColor: "text-amber-500",
@@ -134,8 +137,8 @@ export default function StatusPesananPage() {
                 };
             case "Diproses":
                 return {
-                    label: "Sedang Diproses",
-                    desc: "Minuman sehat pesanan Anda sedang diracik dan disiapkan secara higienis oleh tim kami.",
+                    label: t("status.state.process.label"),
+                    desc: t("status.state.process.desc"),
                     icon: "inventory_2",
                     colorClass: "text-orange-600 bg-orange-50 border-orange-200",
                     iconColor: "text-orange-500",
@@ -143,8 +146,8 @@ export default function StatusPesananPage() {
                 };
             case "Dikirim":
                 return {
-                    label: "Dalam Pengantaran",
-                    desc: "Pesanan Anda sudah siap dan sedang diantarkan oleh kurir internal Sejuba Drink langsung ke alamat Anda.",
+                    label: t("status.state.shipping.label"),
+                    desc: t("status.state.shipping.desc"),
                     icon: "local_shipping",
                     colorClass: "text-blue-600 bg-blue-50 border-blue-200",
                     iconColor: "text-blue-500",
@@ -152,8 +155,8 @@ export default function StatusPesananPage() {
                 };
             case "Selesai":
                 return {
-                    label: "Pesanan Selesai",
-                    desc: "Pesanan Anda telah berhasil diantarkan dan diterima dengan baik. Selamat menikmati!",
+                    label: t("status.state.completed.label"),
+                    desc: t("status.state.completed.desc"),
                     icon: "check_circle",
                     colorClass: "text-[#5B9B34] bg-green-50 border-green-200",
                     iconColor: "text-[#5B9B34]",
@@ -161,8 +164,8 @@ export default function StatusPesananPage() {
                 };
             case "Dibatalkan":
                 return {
-                    label: "Pesanan Dibatalkan",
-                    desc: "Pesanan Anda telah dibatalkan. Silakan hubungi admin Sejuba Drink jika ada pertanyaan.",
+                    label: t("status.state.cancelled.label"),
+                    desc: t("status.state.cancelled.desc"),
                     icon: "cancel",
                     colorClass: "text-red-600 bg-red-50 border-red-200",
                     iconColor: "text-red-500",
@@ -170,8 +173,8 @@ export default function StatusPesananPage() {
                 };
             default:
                 return {
-                    label: "Status Tidak Diketahui",
-                    desc: "Memproses status pengiriman pesanan Anda.",
+                    label: t("status.state.unknown.label"),
+                    desc: t("status.state.unknown.desc"),
                     icon: "help",
                     colorClass: "text-gray-600 bg-gray-50 border-gray-200",
                     iconColor: "text-gray-400",
@@ -189,10 +192,10 @@ export default function StatusPesananPage() {
                 ════════════════════════════════════════ */}
                 <div className="mb-12">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2 uppercase tracking-wide">
-                        Status Pemesanan
+                        {t("status.title")}
                     </h1>
                     <p className="text-gray-600 font-medium">
-                        Pesanan #{pesanan.id_pesanan}
+                        {t("status.order_num")} #{pesanan.id_pesanan}
                     </p>
                 </div>
 
@@ -209,8 +212,8 @@ export default function StatusPesananPage() {
                         </div>
                         {/* Status detail */}
                         <div>
-                            <p className="text-[11px] font-extrabold uppercase tracking-wider opacity-75">
-                                Status Saat Ini
+                             <p className="text-[11px] font-extrabold uppercase tracking-wider opacity-75">
+                                {t("status.current_status")}
                             </p>
                             <h2 className="text-xl md:text-2xl font-extrabold mt-1 text-gray-900">
                                 {activeStatusInfo.label}
@@ -225,13 +228,30 @@ export default function StatusPesananPage() {
                     {ongkir > 0 && (
                         <div className="w-full md:w-auto shrink-0 bg-white/90 backdrop-blur-sm border border-black/5 rounded-2xl p-4 flex flex-col items-center md:items-end text-center md:text-right shadow-sm min-w-[200px]">
                             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                                Estimasi Pengiriman
+                                {pesanan.status_pesanan === "Selesai"
+                                    ? (language === "en" ? "Delivery Date" : "Tanggal Pengantaran")
+                                    : t("status.shipping_estimate")}
                             </span>
                             <span className="text-lg font-black text-[#5B9B34] mt-1 select-none">
-                                Hari Ini
+                                {pesanan.status_pesanan === "Selesai"
+                                    ? (() => {
+                                          const rawDate = pesanan.updated_at || pesanan.tanggal_pesanan;
+                                          if (!rawDate) return t("status.today");
+                                          try {
+                                              const date = new Date(rawDate);
+                                              return date.toLocaleDateString(language === "en" ? "en-US" : "id-ID", {
+                                                  day: "numeric",
+                                                  month: "long",
+                                                  year: "numeric",
+                                              });
+                                          } catch {
+                                              return t("status.today");
+                                          }
+                                      })()
+                                    : t("status.today")}
                             </span>
                             <span className="text-[10px] text-gray-400 mt-1 italic font-medium">
-                                Kurir Internal Sejuba Drink
+                                {t("status.internal_courier")}
                             </span>
                         </div>
                     )}
@@ -285,7 +305,7 @@ export default function StatusPesananPage() {
                             </div>
 
                             <span className="font-semibold text-gray-800 text-sm mb-1">
-                                Pending
+                                {t("status.pending")}
                             </span>
                         </div>
 
@@ -311,7 +331,7 @@ export default function StatusPesananPage() {
                             </div>
 
                             <span className="font-semibold text-gray-800 text-sm mb-1">
-                                Dibayar
+                                {t("status.paid")}
                             </span>
                         </div>
 
@@ -337,7 +357,7 @@ export default function StatusPesananPage() {
                             </div>
 
                             <span className="font-semibold text-gray-800 text-sm mb-1">
-                                Proses
+                                {t("status.process")}
                             </span>
                         </div>
 
@@ -363,7 +383,7 @@ export default function StatusPesananPage() {
                             </div>
 
                             <span className="font-semibold text-gray-800 text-sm mb-1">
-                                Dikirim
+                                {t("status.shipping")}
                             </span>
                         </div>
 
@@ -389,7 +409,7 @@ export default function StatusPesananPage() {
                             </div>
 
                             <span className="font-semibold text-gray-800 text-sm mb-1">
-                                Selesai
+                                {t("status.completed")}
                             </span>
                         </div>
 
@@ -401,7 +421,7 @@ export default function StatusPesananPage() {
                     <div className="mt-10 rounded-xl overflow-hidden border border-gray-200 shadow-sm max-w-3xl mx-auto">
                         {/* Header */}
                         <div className="bg-[#4F7703] px-6 py-4">
-                            <h3 className="font-bold text-white">Produk Dipesan</h3>
+                            <h3 className="font-bold text-white">{t("status.products_ordered")}</h3>
                         </div>
 
                         {/* Body */}
@@ -434,14 +454,14 @@ export default function StatusPesananPage() {
                                                 </p>
 
                                                 <p className="text-sm text-gray-600 mt-2">
-                                                    Jumlah: {item.jumlah}
+                                                    {t("status.quantity")}: {item.jumlah}
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex justify-end mt-2">
                                             <p className="text-sm font-bold text-gray-700">
-                                                Subtotal: {formatRupiah(item.subtotal)}
+                                                {t("status.subtotal")}: {formatRupiah(item.subtotal)}
                                             </p>
                                         </div>
                                     </div>
@@ -451,12 +471,12 @@ export default function StatusPesananPage() {
 
                                 <div className="space-y-4 px-2">
                                     <div className="flex justify-between items-center text-sm font-bold text-gray-700">
-                                        <span>Biaya Kirim</span>
+                                        <span>{t("status.shipping_cost")}</span>
                                         <span>{formatRupiah(ongkir)}</span>
                                     </div>
 
                                     <div className="flex justify-between items-center text-base font-extrabold text-gray-900 pt-2">
-                                        <span>Total Harga</span>
+                                        <span>{t("status.total_price")}</span>
                                         <span>{formatTotal(total)}</span>
                                     </div>
                                 </div>

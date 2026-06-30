@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const testimonials = [
   {
@@ -6,28 +9,24 @@ const testimonials = [
     name: "Deviana",
     age: "25 tahun",
     image: "/images/tentang/coba1.png",
-    quote:
-      "Ini rasanya buah alami tanpa ada rasa pemanis buatan sama sekali. Rasanya tuh buah 100% buah asli. Dengan buah asli yang digunakan harganya sangat wajar.",
   },
   {
     id: 2,
     name: "Gunawan",
     age: "39 tahun",
     image: "/images/tentang/coba2.png",
-    quote:
-      "Lebih enak dari jus lain yang ini manisnya pas. Cocok di minum setiap hari. Rasa buahnya murni, alami. Harganya juga cocok dengan kualitasnya.",
   },
   {
     id: 3,
     name: "Puja",
     age: "18 tahun",
     image: "/images/tentang/coba3.png",
-    quote:
-      "Seger banget sih, untuk Infused Water ini tidak terlalu manis, jadi cocok untuk yang pecinta minuman yang tidak terlalu manis.",
   },
 ];
 
 export default function TentangPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="w-full">
       {/* HERO SECTION */}
@@ -42,13 +41,11 @@ export default function TentangPage() {
         <div className="mx-auto grid max-w-[1440px] items-center gap-6 px-8 py-10 md:grid-cols-[1fr_1.6fr] md:px-14 md:pt-28">
           <div>
             <h1 className="text-[36px] font-extrabold text-[#F59B22] md:text-[56px]">
-              Tentang Kami
+              {t("about.hero.title")}
             </h1>
 
             <p className="mt-8 max-w-[520px] text-[15px] leading-8 text-[#333333] md:text-[20px]">
-              Sejuba Drink hadir dengan visi menyediakan minuman sehat yang dapat
-              dinikmati oleh semua kalangan, mulai dari anak-anak hingga orang
-              dewasa.
+              {t("about.hero.desc")}
             </p>
           </div>
 
@@ -72,26 +69,20 @@ export default function TentangPage() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-8 md:grid-cols-2 md:px-14">
           <div className="text-white">
             <h2 className="max-w-[520px] text-[34px] font-bold leading-tight md:text-[52px]">
-              Cerita di Balik Sejuba Drink
+              {t("about.story.title")}
             </h2>
 
             <div className="mt-8 max-w-[560px] space-y-6 text-[15px] leading-8 text-white/90 md:text-[18px]">
               <p>
-                Sejuba Drink adalah UMKM yang bergerak di bidang minuman sehat
-                dan berdiri sejak awal Januari 2025.
+                {t("about.story.p1")}
               </p>
 
               <p>
-                Kehadiran Sejuba berawal dari keprihatinan sang founder terhadap
-                semakin banyaknya minuman tidak sehat di pasaran, latar belakang
-                keluarga yang memiliki riwayat penyakit jantung, diabetes, dan
-                tekanan darah tinggi.
+                {t("about.story.p2")}
               </p>
 
               <p>
-                Serta pengalaman pribadi saat anak founder gemar mengonsumsi
-                minuman berwarna-warni penuh gula, menjadi motivasi kuat untuk
-                menghadirkan alternatif yang lebih sehat dan alami.
+                {t("about.story.p3")}
               </p>
             </div>
           </div>
@@ -128,7 +119,7 @@ export default function TentangPage() {
           <div className="mx-auto max-w-7xl px-8 md:px-14">
             <div className="rounded-[32px] bg-[#F5A12A] px-6 py-10 md:px-12 md:py-14">
               <h2 className="text-center text-[32px] font-bold text-white md:text-[52px]">
-                Experience The Freshness
+                {t("about.testi.title")}
               </h2>
 
               <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -150,11 +141,11 @@ export default function TentangPage() {
                     </h3>
 
                     <p className="mt-1 text-[18px] font-semibold text-[#1f1f1f]">
-                      {item.age}
+                      {item.age.replace("tahun", t("about.testi.age"))}
                     </p>
 
                     <p className="mt-5 text-[15px] leading-7 text-[#333333]">
-                      "{item.quote}"
+                      "{t("testi.quote." + item.name.toLowerCase())}"
                     </p>
                   </div>
                 ))}
@@ -179,24 +170,16 @@ export default function TentangPage() {
 
           <div className="text-white">
             <h2 className="max-w-[520px] text-[34px] font-bold leading-tight md:text-[52px]">
-              Sejuba Untuk Masa Depan Sehat
+              {t("about.future.title")}
             </h2>
 
             <div className="mt-8 max-w-[560px] space-y-6 text-[15px] leading-8 text-white/90 md:text-[18px]">
               <p>
-                Sejuba Drink berkomitmen untuk terus menghadirkan minuman sehat
-                dari bahan alami dengan tambahan varian baru di masa depan.
-                Harapannya, Sejuba dapat menjadi pilihan utama masyarakat untuk
-                menikmati minuman sehat yang aman, segar, dan bermanfaat bagi
-                tubuh.
+                {t("about.future.p1")}
               </p>
 
               <p>
-                Bagi founder, Sejuba bukan hanya bisnis, ini adalah warisan
-                kepedulian terhadap keluarga, terutama anak-anak, agar mereka
-                tumbuh dengan pilihan yang lebih sehat. Setiap botol Sejuba
-                adalah ajakan kecil: "Mari kita rawat tubuh dengan cara
-                sederhana, lewat apa yang kita minum sehari-hari."
+                {t("about.future.p2")}
               </p>
             </div>
           </div>

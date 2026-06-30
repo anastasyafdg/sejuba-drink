@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface Product {
     id: number;
@@ -19,6 +20,7 @@ interface ReviewModalProps {
 }
 
 export default function ReviewModal({ open, setOpen, preselectedProduct }: ReviewModalProps) {
+    const { t } = useLanguage();
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [products, setProducts] = useState<Product[]>([]);
@@ -79,22 +81,22 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
         try {
 
             if (!pembeli) {
-                toast.error("Silakan login terlebih dahulu");
+                toast.error(t("review_modal.toast_login"));
                 return;
             }
 
             if (!selectedProduct) {
-                alert("Pilih produk terlebih dahulu");
+                alert(t("review_modal.alert_select_product"));
                 return;
             }
 
             if (rating === 0) {
-                alert("Pilih rating terlebih dahulu");
+                alert(t("review_modal.alert_select_rating"));
                 return;
             }
 
             if (!ulasan.trim()) {
-                alert("Isi ulasan terlebih dahulu");
+                alert(t("review_modal.alert_write_review"));
                 return;
             }
 
@@ -117,7 +119,7 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
             const data = await response.json();
 
             if (data.success) {
-                toast.success("Ulasan berhasil ditambahkan");
+                toast.success(t("review_modal.toast_success"));
 
                 setOpen(false);
 
@@ -126,7 +128,7 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
 
         } catch (error) {
 
-            toast.error("Gagal menambahkan ulasan");
+            toast.error(t("review_modal.toast_failed"));
 
         }
     };
@@ -151,11 +153,11 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
 
                 {/* TITLE */}
                 <h2 className="text-center text-[22px] font-bold">
-                    Beri Ulasan & Rating
+                    {t("review_modal.title")}
                 </h2>
 
                 <p className="text-center text-[13px] text-gray-500 mt-1">
-                    Bagikan pengalaman mu setelah menikmati Sejuba Drink
+                    {t("review_modal.subtitle")}
                 </p>
 
                 {/* ================= PRODUK (dropdown jika bebas, readonly jika dari riwayat) ================= */}
@@ -178,7 +180,7 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
                             </div>
                             <div>
                                 <p className="font-semibold text-[16px]">{selectedProduct?.name}</p>
-                                <p className="text-gray-500 text-xs">Produk yang kamu beli</p>
+                                <p className="text-gray-500 text-xs">{t("review_modal.purchased_product")}</p>
                             </div>
                         </div>
                     ) : (
@@ -203,7 +205,7 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
                                     </div>
                                     <div>
                                         <p className="font-semibold text-[16px]">{selectedProduct?.name}</p>
-                                        <p className="text-gray-500 text-xs">Produk Sejuba Drink</p>
+                                        <p className="text-gray-500 text-xs">{t("review_modal.product_placeholder")}</p>
                                     </div>
                                 </div>
                                 <span className="material-symbols-outlined text-gray-500">expand_more</span>
@@ -232,7 +234,7 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
                                             />
                                             <div>
                                                 <p className="text-sm font-medium">{p.name}</p>
-                                                <p className="text-xs text-gray-500">Produk Sejuba Drink</p>
+                                                <p className="text-xs text-gray-500">{t("review_modal.product_placeholder")}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -246,7 +248,7 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
 
                 {/* ================= RATING ================= */}
                 <div className="mt-6">
-                    <p className="font-semibold text-[16px] mb-3">Beri Rating</p>
+                    <p className="font-semibold text-[16px] mb-3">{t("review_modal.give_rating")}</p>
 
                     <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -271,12 +273,12 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
 
                 {/* ================= TEXTAREA ================= */}
                 <div className="mt-6">
-                    <p className="font-semibold text-[16px] mb-2">Tulis Ulasan</p>
+                    <p className="font-semibold text-[16px] mb-2">{t("review_modal.write_review")}</p>
 
                     <textarea
                         value={ulasan}
                         onChange={(e) => setUlasan(e.target.value)}
-                        placeholder="Ceritakan pengalaman mu menikmati Sejuba Drink"
+                        placeholder={t("review_modal.textarea_placeholder")}
                         className="w-full h-[90px] rounded-xl bg-[#EAEAEA] p-3 text-sm outline-none resize-none"
                     ></textarea>
                 </div>
@@ -287,14 +289,14 @@ export default function ReviewModal({ open, setOpen, preselectedProduct }: Revie
                         onClick={() => setOpen(false)}
                         className="flex-1 border border-green-600 text-green-600 py-2.5 rounded-xl font-medium"
                     >
-                        Batal
+                        {t("review_modal.cancel")}
                     </button>
 
                     <button
                         onClick={submitUlasan}
                         className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700 transition"
                     >
-                        Kirim Ulasan
+                        {t("review_modal.submit")}
                     </button>
                 </div>
 

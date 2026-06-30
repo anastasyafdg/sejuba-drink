@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface Props {
     product: any;
@@ -10,6 +11,7 @@ interface Props {
 export default function ProductModal({ product, onClose, onAdd }: Props) {
     const [qty, setQty] = useState(1);
     const [size, setSize] = useState(product.sizes[0]);
+    const { t } = useLanguage();
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -34,7 +36,7 @@ export default function ProductModal({ product, onClose, onAdd }: Props) {
                     <div className="flex flex-col items-start">
 
                         <div className="bg-[#DCE5DE] rounded-[20px] flex items-center justify-center p-6 w-[220px] h-[220px]">
-                            <img src={product.image} className="w-[130px]" />
+                            <img src={product.image} className="w-[130px]" alt={product.name} />
                         </div>
 
                         <div className="mt-5">
@@ -43,7 +45,7 @@ export default function ProductModal({ product, onClose, onAdd }: Props) {
                             </p>
 
                             <h2 className="text-[20px] font-semibold mt-1">
-                                {product.name}
+                                {t(product.name)}
                             </h2>
                         </div>
 
@@ -115,7 +117,7 @@ export default function ProductModal({ product, onClose, onAdd }: Props) {
                                 <span className="material-symbols-outlined text-[18px]">
                                     shopping_cart
                                 </span>
-                                Masukan Keranjang
+                                {t("modal.add_to_cart")}
                             </button>
 
                         </div>

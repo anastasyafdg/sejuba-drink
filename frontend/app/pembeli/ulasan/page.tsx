@@ -3,33 +3,30 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import ReviewModal from "@/components/pembeli/ReviewModal";
-
+import { useLanguage } from "@/lib/LanguageContext";
 
 /* ================= TESTIMONI DATA ================= */
-const testimonials = [
+const TESTIMONIALS = [
   {
     id: 1,
     name: "Deviana",
-    age: "25 tahun",
+    ageKey: "testimonial.deviana.age",
+    quoteKey: "testimonial.deviana.quote",
     image: "/images/tentang/coba1.png",
-    quote:
-      "Ini rasanya buah alami tanpa ada rasa pemanis buatan sama sekali. Rasanya tuh buah 100% buah asli.",
   },
   {
     id: 2,
     name: "Gunawan",
-    age: "39 tahun",
+    ageKey: "testimonial.gunawan.age",
+    quoteKey: "testimonial.gunawan.quote",
     image: "/images/tentang/coba2.png",
-    quote:
-      "Lebih enak dari jus lain yang ini manisnya pas. Cocok diminum setiap hari.",
   },
   {
     id: 3,
     name: "Puja",
-    age: "18 tahun",
+    ageKey: "testimonial.puja.age",
+    quoteKey: "testimonial.puja.quote",
     image: "/images/tentang/coba3.png",
-    quote:
-      "Seger banget sih, tidak terlalu manis jadi cocok untuk pecinta minuman sehat.",
   },
 ];
 
@@ -59,6 +56,7 @@ interface Review {
 }
 
 export default function UlasanPage() {
+  const { t } = useLanguage();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<number | "all">("all");
@@ -122,13 +120,11 @@ export default function UlasanPage() {
         <div className="mx-auto grid max-w-[1440px] items-center gap-6 px-8 py-10 md:grid-cols-[1fr_1.6fr] md:px-14 md:pt-28">
           <div>
             <h1 className="text-[36px] font-extrabold text-[#F59B22] md:text-[56px]">
-              Tentang Kami
+              {t("ulasan.hero.title")}
             </h1>
 
             <p className="mt-8 max-w-[520px] text-[15px] leading-8 text-[#333333] md:text-[20px]">
-              Sejuba Drink hadir dengan visi menyediakan minuman sehat yang dapat
-              dinikmati oleh semua kalangan, mulai dari anak-anak hingga orang
-              dewasa.
+              {t("ulasan.hero.desc")}
             </p>
           </div>
 
@@ -166,7 +162,7 @@ export default function UlasanPage() {
             </h2>
 
             <div className="mt-12 grid md:grid-cols-3 gap-6">
-              {testimonials.map((item) => (
+              {TESTIMONIALS.map((item) => (
                 <div
                   key={item.id}
                   className="bg-[#F5EFE7] rounded-[24px] p-6 shadow-md hover:shadow-xl transition"
@@ -183,10 +179,10 @@ export default function UlasanPage() {
                     {item.name}
                   </h3>
 
-                  <p className="text-sm text-gray-600">{item.age}</p>
+                  <p className="text-sm text-gray-600">{t(item.ageKey)}</p>
 
                   <p className="mt-3 text-[13px] text-gray-700 leading-relaxed">
-                    "{item.quote}"
+                    &ldquo;{t(item.quoteKey)}&rdquo;
                   </p>
                 </div>
               ))}
@@ -203,14 +199,14 @@ export default function UlasanPage() {
           {/* HEADER */}
           <div className="flex justify-between items-center mb-12">
             <h1 className="text-3xl md:text-[38px] font-bold text-white">
-              Ulasan & Rating
+              {t("reviews.title")}
             </h1>
 
             <button
               onClick={() => setOpenModal(true)}
               className="bg-[#F59B22] text-white px-6 py-3 rounded-full hover:bg-orange-500 transition shadow-sm font-semibold text-sm md:text-base"
             >
-              + Tambah Ulasan
+              {t("reviews.add_review")}
             </button>
           </div>
 
@@ -238,14 +234,14 @@ export default function UlasanPage() {
               </div>
 
               <p className="text-white/80 mt-3 text-sm font-medium">
-                Berdasarkan {totalReviews} Ulasan Pembeli
+                {t("reviews.based_on")} {totalReviews} {t("reviews.buyer_reviews")}
               </p>
             </div>
 
             {/* Right Column: Star Filter Buttons */}
             <div className="flex-1 w-full border-t border-white/10 md:border-t-0 md:border-l md:border-white/10 pt-6 md:pt-0 md:pl-8">
               <p className="text-white font-semibold mb-4 text-center md:text-left text-sm md:text-base">
-                Filter Ulasan berdasarkan Bintang:
+                {t("reviews.filter_title")}
               </p>
               <div className="flex flex-wrap gap-2.5 justify-center md:justify-start">
                 {/* Semua Filter Button */}
@@ -257,7 +253,7 @@ export default function UlasanPage() {
                       : "bg-white/10 border-white/10 text-white hover:bg-white/20"
                   }`}
                 >
-                  Semua ({totalReviews})
+                  {t("reviews.all")} ({totalReviews})
                 </button>
 
                 {/* Star Filter Buttons (5 to 1) */}
@@ -327,10 +323,10 @@ export default function UlasanPage() {
                   rate_review
                 </span>
                 <p className="text-white font-medium text-lg">
-                  Belum ada ulasan untuk rating {selectedFilter} bintang
+                  {t("reviews.empty_title")} {selectedFilter} {t("reviews.empty_star")}
                 </p>
                 <p className="text-white/60 text-sm mt-2 max-w-md">
-                  Silakan pilih filter bintang yang lain atau klik filter "Semua" untuk menampilkan kembali seluruh ulasan.
+                  {t("reviews.empty_desc")}
                 </p>
               </div>
             )}

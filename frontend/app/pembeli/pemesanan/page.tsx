@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ProductCard from "@/components/pembeli/ProductCard";
 import ProductModal from "@/components/pembeli/ProductModal";
 import CartSidebar from "@/components/pembeli/CartSidebar";
+import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface Product {
   id: number;
@@ -42,12 +44,31 @@ interface CartItem {
 }
 
 export default function PemesananPage() {
+  const { t } = useLanguage();
+  const { pembeli } = useAuth();
+
+  // Key unik per pembeli agar keranjang tidak tercampur antar akun
+  const cartKey = pembeli?.id_pembeli
+    ? `sejuba_cart_${pembeli.id_pembeli}`
+    : "sejuba_cart_guest";
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Ref di-init dengan cartKey saat ini agar saat useEffect([cartKey])
+  // pertama kali jalan, prevKey === cartKey → tahu ini mount, bukan login/logout.
+  // ─────────────────────────────────────────────────────────────────────────
+  const prevCartKeyRef = useRef<string>(cartKey);
 
   const [products, setProducts] = useState<Product[]>([]);
 
   const [selected, setSelected] = useState<FormattedProduct | null>(null);
 
+  // Cart selalu dimulai KOSONG agar server render = client render (tidak hydration error).
+  // Data dari localStorage dimuat setelah hydration selesai (di useEffect bawah).
   const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Flag: true setelah hydration selesai dan cart sudah dimuat dari localStorage.
+  // Save effect hanya boleh jalan setelah flag ini true agar tidak menghapus data.
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   const [open, setOpen] = useState(false);
 
@@ -57,44 +78,96 @@ export default function PemesananPage() {
 
   const [loading, setLoading] = useState(true);
 
-  // ================= LOAD CART DARI LOCALSTORAGE (saat mount) =================
+  // ================= LOAD CART SETELAH HYDRATION (mount-only) =================
+  // Runs hanya di client setelah React selesai hydration, aman baca localStorage.
   useEffect(() => {
     try {
-      // 1. Cek dulu pending cart (dari redirect login)
-      const pendingCart = sessionStorage.getItem("sejuba_pending_cart");
-      if (pendingCart) {
-        const parsed = JSON.parse(pendingCart);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCart(parsed);
-          sessionStorage.removeItem("sejuba_pending_cart");
-          // Simpan juga ke localStorage agar persisten
-          localStorage.setItem("sejuba_cart_persistent", JSON.stringify(parsed));
-          setOpen(true);
-          return;
+      if (pembeli?.id_pembeli) {
+        // 1. Pending cart dari redirect setelah login
+        const pendingCart = sessionStorage.getItem("sejuba_pending_cart");
+        if (pendingCart) {
+          const parsed = JSON.parse(pendingCart);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCart(parsed);
+            sessionStorage.removeItem("sejuba_pending_cart");
+            localStorage.setItem(cartKey, JSON.stringify(parsed));
+            setHasHydrated(true);
+            setOpen(true);
+            return;
+          }
         }
-      }
 
-      // 2. Baca dari localStorage (untuk persistensi antar refresh/tab)
-      const savedCart = localStorage.getItem("sejuba_cart_persistent");
+        // 2. Load cart dari localStorage sesuai akun saat ini
+        const savedCart = localStorage.getItem(cartKey);
+        if (savedCart) {
+          const parsed = JSON.parse(savedCart);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCart(parsed);
+          }
+        }
+      } else {
+        // Jika tidak login, pastikan keranjang kosong dan hapus guest cart
+        setCart([]);
+        localStorage.removeItem("sejuba_cart_guest");
+      }
+    } catch {}
+
+    setHasHydrated(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount-only
+
+  // ================= HANDLE LOGIN / LOGOUT (cartKey berubah) =================
+  useEffect(() => {
+    const prevKey = prevCartKeyRef.current;
+    prevCartKeyRef.current = cartKey;
+
+    // Abaikan saat mount (prevKey === cartKey karena ref di-init dengan cartKey)
+    if (prevKey === cartKey) return;
+
+    // ─── USER LOGOUT ─────────────────────────────────────────────────────────
+    if (cartKey === "sejuba_cart_guest") {
+      // Kosongkan keranjang saat logout dan hapus guest/session cart
+      setCart([]);
+      try {
+        localStorage.removeItem("sejuba_cart_guest");
+        sessionStorage.removeItem("sejuba_cart");
+      } catch {}
+      return;
+    }
+
+    // ─── USER LOGIN ──────────────────────────────────────────────────────────
+    // Muat cart milik akun yang baru login dari localStorage.
+    try {
+      const savedCart = localStorage.getItem(cartKey);
       if (savedCart) {
         const parsed = JSON.parse(savedCart);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setCart(parsed);
+          return;
         }
       }
+      // Akun ini belum punya cart tersimpan → kosongkan
+      setCart([]);
     } catch {}
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartKey]);
 
-  // ================= SIMPAN CART KE LOCALSTORAGE (saat cart berubah) =================
+  // ================= SIMPAN CART KE LOCALSTORAGE =================
+  // Guard: hanya jalan setelah hasHydrated = true agar tidak menghapus
+  // data localStorage sebelum cart sempat dimuat dari storage.
   useEffect(() => {
+    if (!hasHydrated) return;
+    // Jangan simpan ke localStorage jika user tidak login
+    if (!pembeli?.id_pembeli) return;
     try {
       if (cart.length > 0) {
-        localStorage.setItem("sejuba_cart_persistent", JSON.stringify(cart));
+        localStorage.setItem(cartKey, JSON.stringify(cart));
       } else {
-        localStorage.removeItem("sejuba_cart_persistent");
+        localStorage.removeItem(cartKey);
       }
     } catch {}
-  }, [cart]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart, cartKey, hasHydrated]);
 
   // ================= FETCH PRODUCTS =================
   useEffect(() => {
@@ -179,13 +252,12 @@ export default function PemesananPage() {
 
           {/* ================= TITLE ================= */}
           <h1 className="text-4xl font-bold text-orange-500">
-            Pilih Kesukaanmu!
+            {t("order.hero.title")}
           </h1>
 
           {/* ================= SUBTITLE ================= */}
           <p className="mt-3 text-gray-600 max-w-xl">
-            Pilih produk Sejuba Drink sesuai pilihanmu dan rasakan kesegaran
-            alaminya dalam setiap tegukan.
+            {t("order.hero.subtitle")}
           </p>
 
           {/* ================= CART ICON ================= */}
@@ -216,13 +288,13 @@ export default function PemesananPage() {
             {loading ? (
 
               <p className="text-gray-500">
-                Memuat produk...
+                {t("order.loading")}
               </p>
 
             ) : formattedProducts.length === 0 ? (
 
               <p className="text-gray-500">
-                Belum ada produk tersedia.
+                {t("order.empty")}
               </p>
 
             ) : (
@@ -250,6 +322,16 @@ export default function PemesananPage() {
             onClose={() => setSelected(null)}
 
             onAdd={(item) => {
+              // Harus login untuk bisa menambah ke keranjang
+              if (!pembeli) {
+                setToast(t("checkout.toast_login"));
+                setTimeout(() => {
+                  setToast("");
+                  window.location.href = "/pembeli/login?from=/pembeli/pemesanan";
+                }, 1500);
+                return;
+              }
+
               // item dari ProductModal: { ...product, ...size(label,price), qty }
               // label (misal "250 ml") adalah ukuran yang dipilih
               const cartItem: CartItem = {
@@ -267,7 +349,7 @@ export default function PemesananPage() {
 
               setTimeout(() => setAnimateCart(false), 300);
 
-              setToast("Produk ditambahkan ke keranjang");
+              setToast(t("order.toast.added"));
 
               setTimeout(() => setToast(""), 2000);
             }}
@@ -296,7 +378,7 @@ export default function PemesananPage() {
       <div className="bg-[#6FAE54] py-24 mb-32">
 
         <h2 className="text-center text-[32px] font-bold text-white mb-14">
-          Cara Pemesanan
+          {t("order.steps.title")}
         </h2>
 
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-12 px-6">
@@ -305,7 +387,7 @@ export default function PemesananPage() {
           <div className="bg-[#F59E2E] text-white p-6 rounded-[20px] text-center shadow-md h-[260px] flex flex-col justify-center">
 
             <h3 className="font-semibold text-sm mb-4 leading-snug">
-              Pilih Produk <br /> Sejuba Drink
+              {t("order.steps.step1_title")}
             </h3>
 
             <span className="material-symbols-outlined text-[48px] mb-4">
@@ -313,9 +395,7 @@ export default function PemesananPage() {
             </span>
 
             <p className="text-xs leading-relaxed">
-              Kamu bisa memilih produk Sejuba Drink sebanyak yang kamu inginkan
-              dengan menambahkannya ke keranjang. Kemudian, kamu bisa melakukan
-              checkout pada produk-produk tersebut.
+              {t("order.steps.step1_desc")}
             </p>
 
           </div>
@@ -324,7 +404,7 @@ export default function PemesananPage() {
           <div className="bg-[#F59E2E] text-white p-6 rounded-[20px] text-center shadow-md h-[260px] flex flex-col justify-center">
 
             <h3 className="font-semibold text-sm mb-4 leading-snug">
-              Isi Data <br /> Pengiriman
+              {t("order.steps.step2_title")}
             </h3>
 
             <span className="material-symbols-outlined text-[48px] mb-4">
@@ -332,9 +412,7 @@ export default function PemesananPage() {
             </span>
 
             <p className="text-xs leading-relaxed">
-              Isi alamat pengiriman dan metode pembayaran menggunakan QRIS.
-              Selanjutnya, lakukan pembayaran agar produk yang kamu pilih
-              dapat diproses pengirimannya.
+              {t("order.steps.step2_desc")}
             </p>
 
           </div>
@@ -343,7 +421,7 @@ export default function PemesananPage() {
           <div className="bg-[#F59E2E] text-white p-6 rounded-[20px] text-center shadow-md h-[260px] flex flex-col justify-center">
 
             <h3 className="font-semibold text-sm mb-4 leading-snug">
-              Lakukan <br /> Pembayaran
+              {t("order.steps.step3_title")}
             </h3>
 
             <span className="material-symbols-outlined text-[48px] mb-4">
@@ -351,9 +429,7 @@ export default function PemesananPage() {
             </span>
 
             <p className="text-xs leading-relaxed">
-              Setelah proses pembayaran terkonfirmasi, produk pesanan kamu
-              akan dikirim di hari yang sama. Kamu bisa menunggu dan melihat
-              track perjalanan melalui halaman riwayat pemesanan.
+              {t("order.steps.step3_desc")}
             </p>
 
           </div>

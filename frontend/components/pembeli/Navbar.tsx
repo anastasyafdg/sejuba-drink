@@ -5,13 +5,14 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 import { useSearchParams } from "next/navigation";
 
 const navItems = [
-  { name: "Beranda", href: "/pembeli" },
-  { name: "Tentang", href: "/pembeli/tentang" },
-  { name: "Produk", href: "/pembeli/produk" },
-  { name: "Pemesanan", href: "/pembeli/pemesanan" },
+  { name: "Beranda", key: "nav.home", href: "/pembeli" },
+  { name: "Tentang", key: "nav.about", href: "/pembeli/tentang" },
+  { name: "Produk", key: "nav.products", href: "/pembeli/produk" },
+  { name: "Pemesanan", key: "nav.order", href: "/pembeli/pemesanan" },
 ];
 
 export default function NavbarPembeli() {
@@ -19,6 +20,8 @@ export default function NavbarPembeli() {
   const router = useRouter();
   const isProdukPage = pathname === "/pembeli/produk";
   const isLoginPage = pathname === "/pembeli/login" || pathname === "/pembeli/register";
+
+  const { language, setLanguage, t } = useLanguage();
 
   const [search, setSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -65,10 +68,10 @@ export default function NavbarPembeli() {
 
   return (
     <header className="absolute top-0 left-0 w-full px-6 md:px-10 py-3 z-50">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
 
         {/* LOGO */}
-        <Link href="/pembeli" className="flex items-center">
+        <Link href="/pembeli" className="flex items-center shrink-0">
           <Image
             src="/images/logo/logo-sejuba.png"
             alt="Sejuba Drink"
@@ -80,13 +83,15 @@ export default function NavbarPembeli() {
 
         {/* SEARCH (HANYA DI PRODUK) */}
         {isProdukPage && (
-          <div className="hidden md:flex items-center bg-[#E5EFE7] rounded-full px-4 py-2 w-[300px]">
+          <div className={`hidden md:flex items-center bg-[#E5EFE7] rounded-full px-4 py-2 shrink-0 transition-all duration-300 ${
+            language === "id" ? "w-[244px]" : "w-[300px]"
+          }`}>
             <span className="material-symbols-outlined mr-2 text-gray-500 text-[20px]">
               search
             </span>
             <input
               type="text"
-              placeholder="Cari rasa anda"
+              placeholder={t("nav.search_placeholder")}
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               className="bg-transparent outline-none w-full text-sm"
@@ -110,11 +115,40 @@ export default function NavbarPembeli() {
                     : "border-gray-400 text-gray-600 hover:bg-gray-100"
                     }`}
                 >
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               );
             })}
           </nav>
+
+          {/* Pill Toggle Language Switcher */}
+          <div className="flex items-center border border-gray-300 bg-white rounded-full p-1 h-8 shrink-0 select-none">
+            <span className="material-symbols-outlined text-[16px] text-gray-500 px-1">
+              language
+            </span>
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => setLanguage("id")}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
+                  language === "id"
+                    ? "bg-[#5E8E1B] text-white"
+                    : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                ID
+              </button>
+              <button
+                onClick={() => setLanguage("en")}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
+                  language === "en"
+                    ? "bg-[#5E8E1B] text-white"
+                    : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                EN
+              </button>
+            </div>
+          </div>
 
           {/* USER ICON — render setelah mounted agar tidak hydration mismatch */}
           {!mounted ? (
@@ -125,7 +159,7 @@ export default function NavbarPembeli() {
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center gap-2 rounded-full border-2 border-[#5E8E1B] text-[#5E8E1B] hover:bg-[#E5EFE7] transition px-3 py-1.5 focus:outline-none"
-                title="Profil Pengguna"
+                title={t("nav.edit_profile")}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                   <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
@@ -143,7 +177,7 @@ export default function NavbarPembeli() {
                 <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 overflow-hidden">
                   {/* Info nama */}
                   <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-xs text-gray-400">Masuk sebagai</p>
+                    <p className="text-xs text-gray-400">{t("nav.login_as")}</p>
                     <p className="text-sm font-semibold text-gray-800 truncate">
                       {pembeli?.nama_pembeli ?? "-"}
                     </p>
@@ -153,28 +187,28 @@ export default function NavbarPembeli() {
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#E5EFE7] transition-colors"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Edit Profil
+                    {t("nav.edit_profile")}
                   </Link>
                   <Link
                     href="/pembeli/riwayat-pemesanan"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#E5EFE7] transition-colors"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Riwayat Pemesanan
+                    {t("nav.order_history")}
                   </Link>
                   <Link
                     href="/pembeli/ulasan"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#E5EFE7] transition-colors"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Ulasan dan Rating
+                    {t("nav.reviews")}
                   </Link>
                   <div className="border-t border-gray-200 my-1"></div>
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    Keluar
+                    {t("nav.logout")}
                   </button>
                 </div>
               )}
@@ -183,7 +217,7 @@ export default function NavbarPembeli() {
             <Link
               href="/pembeli/login"
               className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-600 text-gray-600 hover:bg-gray-100 transition shrink-0"
-              title="Masuk / Daftar"
+              title={t("nav.login_register")}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />

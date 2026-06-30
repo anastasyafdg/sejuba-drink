@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/lib/LanguageContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface CartItem {
@@ -28,6 +29,7 @@ interface OrderData {
 export default function PembayaranPage() {
     const router = useRouter();
     const qrRef = useRef<HTMLImageElement>(null);
+    const { t, language } = useLanguage();
 
     const [order, setOrder] = useState<OrderData | null>(null);
 
@@ -72,7 +74,7 @@ export default function PembayaranPage() {
             const idPesanan = sessionStorage.getItem("id_pesanan");
 
             if (!idPesanan) {
-                toast.error("ID Pesanan tidak ditemukan");
+                toast.error(t("payment.toast_id_not_found"));
                 return;
             }
 
@@ -89,7 +91,7 @@ export default function PembayaranPage() {
                 throw new Error(data.message);
             }
 
-            toast.success("Pembayaran berhasil!");
+            toast.success(t("payment.toast_payment_success"));
 
             sessionStorage.removeItem("sejuba_cart");
 
@@ -99,7 +101,7 @@ export default function PembayaranPage() {
 
         } catch (error) {
             console.error(error);
-            toast.error("Gagal memproses pembayaran");
+            toast.error(t("payment.toast_payment_failed"));
         }
     };
 
@@ -120,13 +122,13 @@ export default function PembayaranPage() {
                 ════════════════════════════════════════ */}
                 <section className="mb-10">
                     <h2 className="text-xl font-extrabold tracking-wide mb-5 uppercase">
-                        Informasi Pemesanan
+                        {t("checkout.info_title")}
                     </h2>
 
                     {/* Nama */}
                     <div className="mb-4">
                         <label className="block text-sm text-gray-700 mb-1 font-medium">
-                            Nama Pemesan
+                            {t("checkout.buyer_name")}
                         </label>
                         <div className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-100 text-gray-700">
                             {order.nama || <span className="text-gray-400">—</span>}
@@ -136,14 +138,14 @@ export default function PembayaranPage() {
                     {/* Email + Telepon */}
                     <div className="grid grid-cols-2 gap-4 mb-3">
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1 font-medium">Email</label>
+                            <label className="block text-sm text-gray-700 mb-1 font-medium">{t("checkout.email")}</label>
                             <div className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-100 text-gray-700">
                                 {order.email || <span className="text-gray-400">—</span>}
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm text-gray-700 mb-1 font-medium">
-                                Nomor Telepon (WhatsApp)
+                                {t("checkout.phone")}
                             </label>
                             <div className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-100 text-gray-700">
                                 {order.telepon || <span className="text-gray-400">—</span>}
@@ -152,7 +154,7 @@ export default function PembayaranPage() {
                     </div>
 
                     <p className="text-xs text-gray-500 italic">
-                        Notifikasi pesanan akan kami kirim melalui WhatsApp dan Email.
+                        {t("checkout.notify_info")}
                     </p>
                 </section>
 
@@ -161,19 +163,19 @@ export default function PembayaranPage() {
                 ════════════════════════════════════════ */}
                 <section className="mb-10">
                     <h2 className="text-xl font-extrabold tracking-wide mb-5 uppercase">
-                        Informasi Pengiriman
+                        {t("checkout.shipping_title")}
                     </h2>
 
                     {/* Alamat */}
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
-                        Alamat pengiriman
+                        {t("checkout.shipping_address")}
                     </label>
                     <div className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-100 text-gray-700 mb-5">
-                        {order.alamat || <span className="text-gray-400">Belum diisi</span>}
+                        {order.alamat || <span className="text-gray-400">{t("payment.not_filled")}</span>}
                     </div>
 
                     {/* Jasa pengiriman — read-only */}
-                    <h3 className="text-base font-bold mb-3">Jasa pengiriman</h3>
+                    <h3 className="text-base font-bold mb-3">{t("checkout.shipping_service")}</h3>
                     <div className="flex gap-8 mb-2">
                         <label className="flex items-center gap-2">
                             <input
@@ -183,7 +185,7 @@ export default function PembayaranPage() {
                                 onChange={() => { }}
                                 className="accent-[#6BAA4F] w-4 h-4"
                             />
-                            <span className="text-sm font-medium">Delivery</span>
+                            <span className="text-sm font-medium">{t("checkout.delivery")}</span>
                         </label>
                         <label className="flex items-center gap-2">
                             <input
@@ -193,14 +195,14 @@ export default function PembayaranPage() {
                                 onChange={() => { }}
                                 className="accent-[#6BAA4F] w-4 h-4"
                             />
-                            <span className="text-sm font-medium">Self Pick-up</span>
+                            <span className="text-sm font-medium">{t("checkout.self_pickup")}</span>
                         </label>
                     </div>
                     <p className="text-xs text-gray-600 leading-5 mb-1">
-                        <span className="font-semibold">Delivery</span> – Pengiriman cepat dalam 1 hari.
+                        <span className="font-semibold">{t("checkout.delivery")}</span> – {language === "id" ? "Pengiriman cepat dalam 1 hari." : "Fast delivery in 1 day."}
                     </p>
                     <p className="text-xs text-gray-600 leading-5">
-                        <span className="font-semibold">Self Pick-up</span> – Ambil sendiri di tempat.
+                        <span className="font-semibold">{t("checkout.self_pickup")}</span> – {language === "id" ? "Ambil sendiri di tempat." : "Pick up by yourself at location."}
                     </p>
                 </section>
 
@@ -212,14 +214,14 @@ export default function PembayaranPage() {
                     {/* ── Ringkasan Belanja ── */}
                     <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm h-fit">
                         <div className="bg-[#4F7703] px-5 py-3">
-                            <h3 className="font-bold text-base text-white">Ringkasan Belanja</h3>
+                            <h3 className="font-bold text-base text-white">{t("checkout.order_summary")}</h3>
                         </div>
                         <div className="bg-white px-5 py-4">
                             {/* Table header */}
                             <div className="grid grid-cols-3 text-xs font-semibold text-gray-700 mb-2 pb-2 border-b border-gray-200">
-                                <span>Produk</span>
-                                <span className="text-center">Kuantitas</span>
-                                <span className="text-right">Harga</span>
+                                <span>{t("checkout.product")}</span>
+                                <span className="text-center">{t("checkout.quantity")}</span>
+                                <span className="text-right">{t("checkout.price")}</span>
                             </div>
 
                             {/* Rows */}
@@ -236,7 +238,7 @@ export default function PembayaranPage() {
                             {/* Biaya Kirim */}
                             {order.ongkir > 0 && (
                                 <div className="grid grid-cols-3 text-xs py-2 text-gray-800">
-                                    <span className="col-span-2">Biaya Kirim</span>
+                                    <span className="col-span-2">{t("checkout.shipping_cost")}</span>
                                     <span className="text-right">
                                         Rp.{order.ongkir.toLocaleString("id-ID")},00
                                     </span>
@@ -248,7 +250,7 @@ export default function PembayaranPage() {
 
                             {/* Total */}
                             <div className="grid grid-cols-3 text-sm font-bold text-gray-900 pt-1">
-                                <span className="col-span-2">Total Harga</span>
+                                <span className="col-span-2">{t("checkout.total_price")}</span>
                                 <span className="text-right">
                                     Rp. {order.total.toLocaleString("id-ID")}
                                 </span>
@@ -260,7 +262,7 @@ export default function PembayaranPage() {
                     <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                         <div className="bg-[#4F7703] px-5 py-3">
                             <h3 className="font-bold text-base text-white">
-                                Metode Pembayaran : QRIS
+                                {t("payment.method_title")}
                             </h3>
                         </div>
 
@@ -286,7 +288,7 @@ export default function PembayaranPage() {
                                 onClick={handleUnduhQR}
                                 className="w-[220px] bg-[#F59B22] hover:bg-[#e08c1a] text-white font-semibold text-sm py-2.5 rounded-xl transition"
                             >
-                                Unduh QR Code
+                                {t("payment.download_qr")}
                             </button>
 
                         </div>
@@ -302,7 +304,7 @@ export default function PembayaranPage() {
                         onClick={handleSelesai}
                         className="px-12 py-3 rounded-full bg-[#4F7703] hover:bg-[#3e5f02] text-white font-semibold text-sm transition shadow-md"
                     >
-                        Selesai
+                        {t("payment.done")}
                     </button>
                 </div>
 
